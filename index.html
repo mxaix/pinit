@@ -1034,10 +1034,8 @@ function showRandomSticky() {
   var cntryEl = document.getElementById('sticky-country');
   if (!noteEl || !textEl) return;
 
-  // Fade out (skip on first show)
-  var isFirst = !noteEl.classList.contains('visible') && !noteEl._shown;
-  noteEl._shown = true;
-  if (!isFirst) noteEl.classList.remove('visible');
+  // Fade out then back in
+  noteEl.style.opacity = '0';
 
   setTimeout(function() {
     var color = note.color || '#fef08a';
@@ -1062,7 +1060,7 @@ function showRandomSticky() {
     noteEl.style.transform = 'rotate(' + rot + 'deg)';
 
     // Fade in
-    noteEl.classList.add('visible');
+    noteEl.style.opacity = '1';
   }, 500);
 }
 
