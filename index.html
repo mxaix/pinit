@@ -370,6 +370,7 @@ async function init() {
   await detectLocation();
   await checkIfPosted();
   loadNotes();
+  setTimeout(loadStickyNotes, 1000);
 }
 
 async function detectLocation() {
