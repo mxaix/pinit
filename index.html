@@ -253,10 +253,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .hero-quote { text-shadow: 0 2px 20px rgba(0,0,0,0.4); }
 .hero-body { text-shadow: 0 1px 8px rgba(0,0,0,0.2); }
 
-/* Earth globe */
-.solar-stage { width: 100%; max-width: 760px; margin: 2.5rem auto 0; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.3); position: relative; }
-#earth-canvas { display: block; width: 100%; height: 360px; background: #000408; }
-@media (max-width: 600px) { #earth-canvas { height: 260px; } }
+/* Video embed */
+.solar-stage { width: 100%; max-width: 760px; margin: 2.5rem auto 0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 40px rgba(0,0,0,0.5); position: relative; aspect-ratio: 16/9; }
+.solar-stage iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 12px; }
 </style>
 </head>
 <body>
@@ -272,7 +271,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
   </div>
   <div class="solar-stage">
-    <canvas id="earth-canvas"></canvas>
+    <iframe
+      src="https://www.youtube.com/embed/nGnX6GkrOgk?autoplay=1&mute=1&loop=1&playlist=nGnX6GkrOgk&controls=0&showinfo=0&rel=0&modestbranding=1"
+      title="Solar system galactic motion"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen>
+    </iframe>
   </div>
 </div>
 
@@ -991,9 +996,6 @@ if (window.location.hash === '#wall') {
 init();
 
 </script>
-
-<!-- NASA WorldWind -->
-<script src="https://cdn.jsdelivr.net/npm/worldwindjs@1.7.0/build/dist/worldwind.min.js"></script>
 <script>
 (function() {
   const canvas = document.getElementById('earth-canvas');
@@ -1040,6 +1042,9 @@ init();
 
 })();
 </script>
+
+
+
 
 </body>
 </html>
