@@ -276,13 +276,13 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 </div>
 
 <!-- Sticky note on landing -->
-<div class="sticky-wrap" id="sticky-wrap">
-  <div class="sticky-note" id="sticky-note">
-    <div class="sticky-pin"></div>
-    <div class="sticky-note-text" id="sticky-text"></div>
-    <div class="sticky-note-footer">
-      <span id="sticky-alias"></span>
-      <span id="sticky-country"></span>
+<div id="sticky-wrap" style="position:fixed;right:2.5rem;top:50%;transform:translateY(-50%);z-index:2;width:200px;pointer-events:none;">
+  <div id="sticky-note" style="width:200px;border-radius:3px;padding:16px 14px 12px;box-shadow:4px 5px 20px rgba(0,0,0,0.6);position:relative;opacity:0;transition:opacity 0.7s ease;background:#fef08a;">
+    <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e8e8e8,#999);box-shadow:0 2px 5px rgba(0,0,0,0.6);z-index:1;"></div>
+    <div id="sticky-text" style="font-family:'Caveat',cursive;font-size:18px;line-height:1.55;margin-bottom:10px;word-break:break-word;color:#1a1612;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden;"></div>
+    <div id="sticky-footer" style="display:flex;justify-content:space-between;font-family:'DM Sans',sans-serif;font-size:10px;border-top:1px solid rgba(0,0,0,0.12);padding-top:7px;">
+      <span id="sticky-alias" style="font-weight:500;color:rgba(0,0,0,0.4);"></span>
+      <span id="sticky-country" style="color:rgba(0,0,0,0.4);"></span>
     </div>
   </div>
 </div>
@@ -1034,8 +1034,10 @@ function showRandomSticky() {
   var cntryEl = document.getElementById('sticky-country');
   if (!noteEl || !textEl) return;
 
-  // Fade out
-  noteEl.classList.remove('visible');
+  // Fade out (skip on first show)
+  var isFirst = !noteEl.classList.contains('visible') && !noteEl._shown;
+  noteEl._shown = true;
+  if (!isFirst) noteEl.classList.remove('visible');
 
   setTimeout(function() {
     var color = note.color || '#fef08a';
@@ -1053,7 +1055,7 @@ function showRandomSticky() {
     aliasEl.style.color = mutedColor;
     cntryEl.textContent = note.country || '';
     cntryEl.style.color = mutedColor;
-    noteEl.querySelector('.sticky-note-footer').style.borderTopColor = borderColor;
+    var footerEl = document.getElementById('sticky-footer'); if(footerEl) footerEl.style.borderTopColor = borderColor;
 
     // Random slight rotation for natural feel
     var rot = (Math.random() - 0.5) * 6;
