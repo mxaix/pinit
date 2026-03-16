@@ -1006,10 +1006,17 @@ var stickyTimer = null;
 
 async function loadStickyNotes() {
   var today = new Date().toISOString().slice(0, 10);
+  // Try today first, fallback to most recent notes ever
   var res = await sb.from('notes')
     .select('content,alias,country,color')
     .eq('note_date', today)
     .limit(50);
+  if (!res.data || !res.data.length) {
+    res = await sb.from('notes')
+      .select('content,alias,country,color')
+      .order('created_at', { ascending: false })
+      .limit(50);
+  }
   if (res.data && res.data.length) {
     stickyNotes = res.data;
     showRandomSticky();
@@ -1174,10 +1181,10 @@ init();
   loader.crossOrigin = 'anonymous';
 
   // Using NASA/natural earth textures from a reliable CDN
-  var earthTexUrl   = 'https://cdn.jsdelivr.net/npm/three-globe@2.34.2/example/img/earth-blue-marble.jpg';
-  var normalTexUrl  = 'https://cdn.jsdelivr.net/npm/three-globe@2.34.2/example/img/earth-topology.png';
-  var cloudsTexUrl  = 'https://cdn.jsdelivr.net/npm/three-globe@2.34.2/example/img/earth-clouds.png';
-  var nightTexUrl   = 'https://cdn.jsdelivr.net/npm/three-globe@2.34.2/example/img/earth-night.jpg';
+  var earthTexUrl  = 'https://cdn.jsdelivr.net/npm/three-globe@2.37.1/example/img/earth-blue-marble.jpg';
+  var normalTexUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.37.1/example/img/earth-topology.png';
+  var cloudsTexUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.37.1/example/img/earth-clouds.png';
+  var nightTexUrl  = 'https://cdn.jsdelivr.net/npm/three-globe@2.37.1/example/img/earth-night.jpg';
 
   // ── Earth sphere ──────────────────────────────────────────
   var earthGeo = new THREE.SphereGeometry(1, 64, 64);
