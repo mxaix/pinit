@@ -276,7 +276,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 </div>
 
 <!-- Sticky note on landing -->
-<div id="sticky-wrap" style="position:fixed;right:2.5rem;top:50%;transform:translateY(-50%);z-index:2;width:200px;pointer-events:none;">
+<div id="sticky-wrap" style="position:fixed;right:2.5rem;top:0;bottom:0;margin:auto;z-index:2;width:200px;height:fit-content;pointer-events:none;display:flex;align-items:center;">
   <div id="sticky-note" style="width:200px;border-radius:3px;padding:16px 14px 12px;box-shadow:4px 5px 20px rgba(0,0,0,0.6);position:relative;opacity:0;transition:opacity 0.7s ease;background:#fef08a;">
     <div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e8e8e8,#999);box-shadow:0 2px 5px rgba(0,0,0,0.6);z-index:1;"></div>
     <div id="sticky-text" style="font-family:'Caveat',cursive;font-size:18px;line-height:1.55;margin-bottom:10px;word-break:break-word;color:#1a1612;display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden;"></div>
@@ -1021,7 +1021,7 @@ async function loadStickyNotes() {
     stickyNotes = res.data;
     showRandomSticky();
     if (stickyTimer) clearInterval(stickyTimer);
-    stickyTimer = setInterval(showRandomSticky, 20000);
+    stickyTimer = setInterval(showRandomSticky, 10000);
   }
 }
 
@@ -1034,7 +1034,8 @@ function showRandomSticky() {
   var cntryEl = document.getElementById('sticky-country');
   if (!noteEl || !textEl) return;
 
-  // Fade out then back in
+  // Smooth fade out then fade in
+  noteEl.style.transition = 'opacity 0.6s ease';
   noteEl.style.opacity = '0';
 
   setTimeout(function() {
@@ -1055,11 +1056,10 @@ function showRandomSticky() {
     cntryEl.style.color = mutedColor;
     var footerEl = document.getElementById('sticky-footer'); if(footerEl) footerEl.style.borderTopColor = borderColor;
 
-    // Random slight rotation for natural feel
-    var rot = (Math.random() - 0.5) * 6;
-    noteEl.style.transform = 'rotate(' + rot + 'deg)';
+    // Slight rotation on note card only
 
     // Fade in
+    noteEl.style.transition = 'opacity 0.6s ease';
     noteEl.style.opacity = '1';
   }, 500);
 }
