@@ -1006,63 +1006,53 @@ var stickyTimer = null;
 
 async function loadStickyNotes() {
   var today = new Date().toISOString().slice(0, 10);
-  // Try today first, fallback to most recent notes ever
-  var res = await sb.from('notes')
-    .select('content,alias,country,color')
-    .eq('note_date', today)
-    .limit(50);
+  var res = await sb.from('notes').select('content,alias,country,color').eq('note_date', today).limit(50);
   if (!res.data || !res.data.length) {
-    res = await sb.from('notes')
-      .select('content,alias,country,color')
-      .order('created_at', { ascending: false })
-      .limit(50);
+    res = await sb.from('notes').select('content,alias,country,color').order('created_at',{ascending:false}).limit(50);
   }
-  if (res.data && res.data.length) {
-    stickyNotes = res.data;
-    showRandomSticky();
-    if (stickyTimer) clearInterval(stickyTimer);
-    stickyTimer = setInterval(showRandomSticky, 10000);
-  }
+  if (!res.data || !res.data.length) return;
+  stickyNotes = res.data;
+
+  // Show immediately
+  renderSticky(stickyNotes[Math.floor(Math.random()*stickyNotes.length)]);
+
+  if (stickyTimer) clearInterval(stickyTimer);
+  stickyTimer = setInterval(function(){
+    var note = stickyNotes[Math.floor(Math.random()*stickyNotes.length)];
+    var el = document.getElementById('sticky-note');
+    if (!el) return;
+    el.style.transition = 'opacity 0.5s';
+    el.style.opacity = '0';
+    setTimeout(function(){ renderSticky(note); }, 550);
+  }, 10000);
 }
 
-function showRandomSticky() {
-  if (!stickyNotes.length) return;
-  var note = stickyNotes[Math.floor(Math.random() * stickyNotes.length)];
-  var noteEl  = document.getElementById('sticky-note');
-  var textEl  = document.getElementById('sticky-text');
-  var aliasEl = document.getElementById('sticky-alias');
-  var cntryEl = document.getElementById('sticky-country');
-  if (!noteEl || !textEl) return;
+function renderSticky(note) {
+  var el   = document.getElementById('sticky-note');
+  var txt  = document.getElementById('sticky-text');
+  var ali  = document.getElementById('sticky-alias');
+  var cnt  = document.getElementById('sticky-country');
+  var ftr  = document.getElementById('sticky-footer');
+  if (!el || !txt) return;
 
-  // Smooth fade out then fade in
-  noteEl.style.transition = 'opacity 0.6s ease';
-  noteEl.style.opacity = '0';
+  var color = note.color || '#fef08a';
+  var light = isLightBg(color);
+  var tc = light ? '#1a1612' : '#f5f0e8';
+  var mc = light ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.5)';
+  var bc = light ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
 
-  setTimeout(function() {
-    var color = note.color || '#fef08a';
-    noteEl.style.background = color;
+  el.style.background = color;
+  txt.textContent = note.content || '';
+  txt.style.color = tc;
+  if (ali) { ali.textContent = note.alias || ''; ali.style.color = mc; }
+  if (cnt) { cnt.textContent = note.country || ''; cnt.style.color = mc; }
+  if (ftr) ftr.style.borderTopColor = bc;
 
-    // Text and footer color based on note background
-    var isLight = isLightBg(color);
-    var textColor = isLight ? '#1a1612' : '#f5f0e8';
-    var mutedColor = isLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.5)';
-    var borderColor = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)';
-
-    textEl.textContent = note.content;
-    textEl.style.color = textColor;
-    aliasEl.textContent = note.alias || '';
-    aliasEl.style.color = mutedColor;
-    cntryEl.textContent = note.country || '';
-    cntryEl.style.color = mutedColor;
-    var footerEl = document.getElementById('sticky-footer'); if(footerEl) footerEl.style.borderTopColor = borderColor;
-
-    // Slight rotation on note card only
-
-    // Fade in
-    noteEl.style.transition = 'opacity 0.6s ease';
-    noteEl.style.opacity = '1';
-  }, 500);
+  el.style.transition = 'opacity 0.5s';
+  el.style.opacity = '1';
 }
+
+
 
 function isLightBg(hex) {
   if (!hex || hex[0] !== '#') return true;
