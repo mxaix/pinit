@@ -32,8 +32,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .hero-body { font-size: 15px; color: var(--text-soft); line-height: 1.9; max-width: 480px; margin: 0 auto 2.5rem; font-weight: 300; }
 .hero-actions { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
 .divider { width: 40px; height: 1px; background: var(--border-dark); margin: 0 auto 2rem; }
-.hero-stats { display: contents; }
-.hstat-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; }
 @media (max-width: 600px) { .brand { display: none; } .header { padding: 0.75rem 1rem; } }
 
 .post-btn { background: var(--terra); color: #fff; font-size: 17px; font-weight: 400; border: none; padding: 16px 48px; border-radius: 50px; cursor: pointer; transition: all 0.25s; white-space: nowrap; letter-spacing: 0.04em; box-shadow: 0 6px 28px rgba(196,113,74,0.32); font-family: 'Playfair Display', serif; font-style: italic; }
@@ -41,10 +39,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .post-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* Country tabs */
-
-.ctab { font-size: 12px; font-weight: 500; background: none; border: 1px solid var(--border); color: var(--muted); padding: 5px 12px; border-radius: 20px; cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
-.ctab:hover { color: var(--text); border-color: var(--muted); }
-.ctab.active { background: var(--gold); color: #1a1612; border-color: var(--gold); font-weight: 600; }
 
 /* Wall */
 
@@ -253,13 +247,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .stat-btn { background: transparent; border: none; color: var(--muted); font-size: 12px; font-weight: 400; padding: 4px 0; cursor: pointer; transition: color 0.2s; white-space: nowrap; letter-spacing: 0.12em; text-transform: uppercase; font-family: 'DM Sans', sans-serif; text-decoration: underline; text-decoration-color: rgba(154,143,133,0.3); text-underline-offset: 3px; }
 .stat-btn:hover { color: var(--terra); text-decoration-color: rgba(196,113,74,0.4); }
 
-
 /* Solar system canvas */
 
 /* Make landing text readable over space bg */
 .hero-quote { text-shadow: 0 2px 20px rgba(0,0,0,0.4); }
 .hero-body { text-shadow: 0 1px 8px rgba(0,0,0,0.2); }
-
 
 /* Earth globe */
 .solar-stage { width: 100%; max-width: 760px; margin: 2.5rem auto 0; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.3); position: relative; }
@@ -360,8 +352,6 @@ const COLORS = [
 
 let userIPHash = null, userCountry = 'Unknown', userCountryCode = '';
 let selectedColor = COLORS[0];
-let allNotes = [];
-let activeCountry = null;
 let hasPosted = false;
 
 async function init() {
@@ -479,20 +469,12 @@ async function moderate(text) {
 }
 
 async function loadNotes() {
-  const {data, error} = await sb.from('notes').select('*').order('created_at', {ascending:false});
-  if (error || !data) { document.getElementById('wall').innerHTML='<div class="empty"><p>No notes yet.</p><small>Be the first to leave your mark.</small></div>'; return; }
-  allNotes = data;
-  updateStats(data);
-}
-
-function updateStats(notes) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { count, error } = await sb.from('notes').select('*', { count: 'exact', head: true }).eq('note_date', today);
+  if (error) return;
   const statEl = document.getElementById('stat-notes');
-  if (statEl) statEl.textContent = notes.length.toLocaleString();
-  const countries = new Set(notes.map(n=>n.country).filter(Boolean));
+  if (statEl && count !== null) statEl.textContent = count.toLocaleString();
 }
-
-
-
 
 function isLight(hex) {
   if (!hex || hex[0]!=='#') return true;
@@ -603,7 +585,6 @@ function escHtml(s) {
 document.getElementById('overlay').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
-
 
 const COUNTRY_COORDS = {
   "Afghanistan": [33.93911, 67.709953],
@@ -721,7 +702,6 @@ const COUNTRY_COORDS = {
   "Yemen": [15.552727, 48.516388],
   "Zimbabwe": [-19.015438, 29.154857]
 };
-
 
 // ---- MAP ----
 let map = null;
@@ -1010,12 +990,7 @@ if (window.location.hash === '#wall') {
 
 init();
 
-
 </script>
-
-
-
-
 
 <!-- NASA WorldWind -->
 <script src="https://cdn.jsdelivr.net/npm/worldwindjs@1.7.0/build/dist/worldwind.min.js"></script>
@@ -1049,17 +1024,19 @@ init();
   // Slow auto-rotation
   let lon = 0;
   function rotate() {
-    lon -= 0.04; // degrees per frame — slow gentle spin
-    wwd.navigator.lookAtLocation.longitude = lon % 360;
-    wwd.redraw();
+    if (rotating) {
+      lon -= 0.025;
+      wwd.navigator.lookAtLocation.longitude = lon % 360;
+      wwd.redraw();
+    }
     requestAnimationFrame(rotate);
   }
   rotate();
 
   // Allow user interaction — pause rotation on drag
+  var rotating = true;
   canvas.addEventListener('mousedown', () => { rotating = false; });
   canvas.addEventListener('touchstart', () => { rotating = false; });
-  let rotating = true;
 
 })();
 </script>
