@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pinit</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #1c1917;
+  --surface: #28251f;
+  --border: #3a3530;
+  --text: #f5f0e8;
+  --muted: #7a746c;
+  --gold: #c9a84c;
+  --gold-light: #e8d5a0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* Header */
+.header { padding: 5rem 1.5rem 4rem; text-align: center; background: var(--bg); }
+.brand { display: flex; flex-direction: column; align-items: center; }
+.brand-name { font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 500; color: var(--text); letter-spacing: -0.02em; }
+.brand-name span { color: var(--gold); }
+.brand-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.hero-quote { font-family: 'Playfair Display', serif; font-size: clamp(20px, 3.5vw, 30px); font-style: italic; font-weight: 400; color: var(--terra); line-height: 1.5; max-width: 580px; margin: 0 auto 1.5rem; }
+.hero-body { font-size: 15px; color: var(--text-soft); line-height: 1.9; max-width: 480px; margin: 0 auto 2.5rem; font-weight: 300; }
+.hero-actions { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.divider { width: 40px; height: 1px; background: var(--border-dark); margin: 0 auto 2rem; }
+.hero-stats { display: contents; }
+.hstat-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 4px; }
+@media (max-width: 600px) { .brand { display: none; } .header { padding: 0.75rem 1rem; } }
+
+.post-btn { background: var(--terra); color: #fff; font-size: 17px; font-weight: 400; border: none; padding: 16px 48px; border-radius: 50px; cursor: pointer; transition: all 0.25s; white-space: nowrap; letter-spacing: 0.04em; box-shadow: 0 6px 28px rgba(196,113,74,0.32); font-family: 'Playfair Display', serif; font-style: italic; }
+.post-btn:hover { background: #b35e38; box-shadow: 0 10px 36px rgba(196,113,74,0.42); transform: translateY(-3px); }
+.post-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Country tabs */
+
+.ctab { font-size: 12px; font-weight: 500; background: none; border: 1px solid var(--border); color: var(--muted); padding: 5px 12px; border-radius: 20px; cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
+.ctab:hover { color: var(--text); border-color: var(--muted); }
+.ctab.active { background: var(--gold); color: #1a1612; border-color: var(--gold); font-weight: 600; }
+
+/* Wall */
+
+/* Sticky note */
+.note {
+  break-inside: avoid;
+  margin-bottom: 14px;
+  padding: 1rem 1rem 0.75rem;
+  border-radius: 2px;
+  position: relative;
+  cursor: default;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 2px 3px 8px rgba(0,0,0,0.35);
+}
+.note:hover { transform: rotate(0deg) scale(1.04) translateY(-3px); box-shadow: 4px 6px 16px rgba(0,0,0,0.5); z-index: 10; }
+.note:nth-child(odd) { transform: rotate(-1.2deg); }
+.note:nth-child(even) { transform: rotate(0.8deg); }
+.note:nth-child(3n) { transform: rotate(1.5deg); }
+.note:hover { transform: rotate(0deg) scale(1.04) translateY(-3px) !important; }
+
+/* Pin */
+.note::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle at 35% 35%, #e0e0e0, #999);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+
+.note-text {
+  font-family: 'Caveat', cursive;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #1a1612;
+  margin-bottom: 0.6rem;
+  word-break: break-word;
+}
+
+.note-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  padding-top: 6px;
+  margin-top: 4px;
+}
+.note-alias { font-size: 11px; font-weight: 600; color: rgba(0,0,0,0.5); font-family: 'DM Sans', sans-serif; }
+.note-country { font-size: 10px; color: rgba(0,0,0,0.35); font-family: 'DM Sans', sans-serif; }
+
+/* Post modal overlay */
+.overlay { position: fixed; inset: 0; background: rgba(44,37,32,0.55); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: flex-start; justify-content: center; padding: 1rem; overflow-y: auto; }
+.overlay.open { display: flex; }
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  box-shadow: 0 8px 40px rgba(44,37,32,0.12);
+  margin: auto;
+}
+@media (max-width: 480px) {
+  .modal { padding: 1.25rem; border-radius: 10px; margin: 1rem auto; }
+  .note-preview textarea { font-size: 16px; }
+  .field input { font-size: 16px; }
+}
+.modal h2 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 400; margin-bottom: 0.3rem; color: var(--text); }
+.modal > p { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
+.modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; transition: color 0.2s; }
+.modal-close:hover { color: var(--terra); }
+
+.field { margin-bottom: 1rem; }
+.field label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; }
+.field input { width: 100%; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px; outline: none; transition: border-color 0.2s; }
+.field input:focus { border-color: var(--terra); }
+.field input::placeholder { color: var(--muted); }
+
+/* Note preview textarea */
+.note-preview {
+  background: #fef08a;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  position: relative;
+  box-shadow: 3px 4px 14px rgba(44,37,32,0.15);
+  min-height: 140px;
+}
+.note-preview::before {
+  content: '';
+  position: absolute;
+  top: -6px; left: 50%;
+  transform: translateX(-50%);
+  width: 12px; height: 12px;
+  background: radial-gradient(circle at 35% 35%, #e0e0e0, #999);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+.note-preview textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: 'Caveat', cursive;
+  font-size: 18px;
+  line-height: 1.55;
+  color: #1a1612;
+  resize: none;
+  min-height: 100px;
+}
+.note-preview textarea::placeholder { color: rgba(26,22,18,0.35); }
+.note-preview-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 6px; }
+.preview-alias { font-size: 11px; font-weight: 600; color: rgba(0,0,0,0.45); font-family: 'DM Sans', sans-serif; }
+.preview-country { font-size: 10px; color: rgba(0,0,0,0.3); font-family: 'DM Sans', sans-serif; }
+.char-hint { font-size: 11px; color: var(--muted); text-align: right; margin-top: 4px; margin-bottom: 1rem; }
+
+/* Color picker */
+.colors { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.color-opt { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s, border-color 0.15s; }
+.color-opt:hover { transform: scale(1.15); }
+.color-opt.selected { border-color: #fff; transform: scale(1.15); }
+
+.modal-alert { border-radius: 2px; padding: 9px 13px; font-size: 13px; margin-bottom: 1rem; line-height: 1.6; display: none; }
+.modal-alert.show { display: block; }
+.alert-error { background: #fdf0f0; border: 1px solid #f0b8b8; color: #b94040; border-radius: 8px; }
+.alert-warn { background: var(--terra-light); border: 1px solid #e8c0a8; color: var(--terra); border-radius: 8px; }
+
+.submit-btn { width: 100%; background: var(--terra); color: #fff; font-size: 14px; font-weight: 500; border: none; padding: 12px; border-radius: 40px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.02em; }
+.submit-btn:hover { background: #b35e38; }
+.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(26,22,18,0.3); border-top-color: #1a1612; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 6px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading { text-align: center; padding: 4rem; color: var(--muted); font-size: 14px; }
+.empty { text-align: center; padding: 4rem 1rem; color: var(--muted); }
+.empty p { font-size: 15px; margin-bottom: 0.5rem; }
+.empty small { font-size: 13px; }
+
+.toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--terra); color: #fff; font-size: 13px; font-weight: 500; padding: 10px 20px; border-radius: 40px; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; z-index: 300; box-shadow: 0 4px 16px rgba(196,113,74,0.3); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Map overlay */
+.map-overlay { position: fixed; inset: 0; background: #f5f0e8; z-index: 500; display: none; flex-direction: column; }
+#map { position: relative; }
+.map-overlay.open { display: flex; }
+.map-topbar { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 600; display: flex; align-items: center; gap: 4px; background: rgba(44,37,32,0.88); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); border-radius: 40px; padding: 6px 10px; box-shadow: 0 2px 16px rgba(0,0,0,0.25); white-space: nowrap; flex-wrap: nowrap; }
+.map-title { display: none; }
+.map-close { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 13px; padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
+.map-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
+#map { flex: 1; width: 100%; }
+.leaflet-container { background: #e8e0d4 !important; }
+
+/* Map counters */
+.map-counters { position: absolute; bottom: 2rem; left: 1.5rem; z-index: 600; display: flex; flex-direction: column; gap: 8px; }
+.map-counter { background: rgba(44,37,32,0.82); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 14px; }
+.map-counter-n { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 400; color: #f5c49a; line-height: 1; }
+.map-counter-l { font-size: 10px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 3px; }
+
+/* Map dot */
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 0 4px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.4); transform: scale(1.15); }
+}
+@keyframes dotBlink {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(196,113,74,0.5); }
+  50% { opacity: 0.7; transform: scale(1.15); box-shadow: 0 0 0 5px rgba(196,113,74,0); }
+}
+.map-dot { width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid #fff; box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.4); cursor: pointer; animation: dotPulse 2.2s ease-in-out infinite; }
+.map-dot:hover { transform: scale(2.2) !important; animation: none; }
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.4), 0 0 0 0px rgba(255,255,255,0); }
+  50% { box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.4), 0 0 0 5px rgba(255,255,255,0.25); }
+}
+
+/* Map note card — shown at high zoom */
+.map-note-card { width: 160px; border-radius: 3px; padding: 10px 10px 8px; box-shadow: 2px 3px 10px rgba(0,0,0,0.25); cursor: pointer; position: relative; transition: box-shadow 0.15s; }
+.map-note-card:hover { box-shadow: 3px 5px 16px rgba(0,0,0,0.35); z-index: 999; }
+.map-note-pin { position: absolute; top: -7px; left: 50%; transform: translateX(-50%); width: 11px; height: 11px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #e8e8e8, #aaa); box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+.map-note-text { font-family: 'Caveat', cursive; font-size: 13px; line-height: 1.45; margin-bottom: 6px; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.map-note-footer { display: flex; justify-content: space-between; font-family: 'DM Sans', sans-serif; font-size: 10px; padding-top: 5px; border-top: 1px solid; }
+
+/* Note popup */
+.note-popup { font-family: 'Caveat', cursive; min-width: 180px; max-width: 240px; }
+.note-popup-inner { border-radius: 2px; padding: 12px; box-shadow: 3px 4px 12px rgba(0,0,0,0.5); }
+.note-popup-text { font-size: 17px; line-height: 1.5; color: #1a1612; margin-bottom: 8px; }
+.note-popup-footer { display: flex; justify-content: space-between; font-family: 'DM Sans', sans-serif; font-size: 11px; color: rgba(0,0,0,0.45); border-top: 1px solid rgba(0,0,0,0.1); padding-top: 6px; }
+.leaflet-popup-content-wrapper { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+.leaflet-popup-content { margin: 0 !important; }
+.leaflet-popup-tip-container { display: none; }
+
+/* Stat button clickable */
+.stat-btn { background: transparent; border: none; color: var(--muted); font-size: 12px; font-weight: 400; padding: 4px 0; cursor: pointer; transition: color 0.2s; white-space: nowrap; letter-spacing: 0.12em; text-transform: uppercase; font-family: 'DM Sans', sans-serif; text-decoration: underline; text-decoration-color: rgba(154,143,133,0.3); text-underline-offset: 3px; }
+.stat-btn:hover { color: var(--terra); text-decoration-color: rgba(196,113,74,0.4); }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="hero-quote">&ldquo;Billions of people have walked this earth. Most left no trace. This is your trace.&rdquo;</div>
+  <div class="divider"></div>
+  <div class="hero-body">Every day, the wall resets. Every day, new voices from every corner of the world pin their one note. What is humanity thinking today? What are they feeling? One note per person. Gone at midnight. But remembered forever in the archive.</div>
+  <div class="hero-actions">
+    <button class="post-btn" id="open-modal-btn" onclick="openModal()">Leave your Trace</button>
+    <div class="hero-stats">
+      <button class="stat-btn" onclick="openMap()">World Wide Notes ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- Map Overlay -->
+<div class="map-overlay" id="map-overlay">
+  <div class="map-topbar">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <button class="map-close" id="map-prev-btn" onclick="changeMapDate(-1)" style="padding:5px 10px;">&#8592;</button>
+      <span id="map-date-label" style="font-size:12px;color:#f5c49a;min-width:90px;text-align:center;font-weight:500;"></span>
+      <button class="map-close" id="map-next-btn" onclick="changeMapDate(1)" style="padding:5px 10px;">&#8594;</button>
+      <button class="map-close" id="find-my-note-btn" onclick="findMyNote()" style="display:none;border:1px solid rgba(255,255,255,0.3);color:#f5c49a;">&#9675; Find my note</button>
+
+    </div>
+  </div>
+  <div class="map-counters">
+    <div class="map-counter"><div class="map-counter-n" id="map-note-count">—</div><div class="map-counter-l">Notes today</div></div>
+    <div class="map-counter"><div class="map-counter-n" id="map-country-count">—</div><div class="map-counter-l">Countries</div></div>
+  </div>
+  <button onclick="closeMap()"  style="position:absolute;top:12px;right:12px;z-index:600;background:rgba(250,247,242,0.92);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:50%;width:36px;height:36px;font-size:18px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(44,37,32,0.1);" onmouseover="this.style.color='var(--terra)'" onmouseout="this.style.color='var(--muted)'">&times;</button>
+  <div id="map"></div>
+</div>
+
+<!-- Post Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h2>Your note to the world</h2>
+    <p>One note today. 60 words max. Resets at midnight UTC.</p>
+
+    <div class="note-preview" id="note-preview">
+      <textarea id="note-input" placeholder="Write anything. A thought, a wish, a truth, a question..." maxlength="700" oninput="onNoteInput(this)"></textarea>
+      <div class="note-preview-footer">
+        <span class="preview-alias" id="preview-alias">Your name</span>
+        <span class="preview-country" id="preview-country">Detecting...</span>
+      </div>
+    </div>
+    <div class="char-hint"><span id="word-count">0</span> / 60 words</div>
+
+    <div class="field">
+      <label>Your name or alias</label>
+      <input type="text" id="alias-input" placeholder="What shall the world call you?" maxlength="40" oninput="document.getElementById('preview-alias').textContent=this.value||'Your name'" />
+    </div>
+
+    <div class="field" style="margin-bottom:0.5rem;"><label>Pick your note color</label></div>
+    <div class="colors" id="color-picker"></div>
+
+    <div class="modal-alert alert-error" id="modal-alert-error"></div>
+    <div class="modal-alert alert-warn" id="modal-alert-warn"></div>
+
+    <p style="font-size:11px;color:var(--muted);margin-bottom:1rem;line-height:1.5;">Your country is detected automatically. One note per day. Resets at midnight UTC. Content is filtered for harmful language.</p>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitNote()">Pin my note to the wall &rarr;</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://udzxqigctbrpandqmzev.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkenhxaWdjdGJycGFuZHFtemV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NjQ1NzMsImV4cCI6MjA4OTE0MDU3M30.ZR5L_90-ztWz_D-gVbSIwQFEnrqa3XDBZCmRjzB5EEs';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const COLORS = [
+  '#fef08a','#fde68a','#fcd34d', // yellows
+  '#86efac','#6ee7b7',           // greens
+  '#93c5fd','#a5b4fc',           // blues
+  '#f9a8d4','#fca5a5',           // pinks/reds
+  '#fdba74','#d9f99d',           // orange/lime
+  '#ffffff','#e2e8f0',           // white/silver
+];
+
+let userIPHash = null, userCountry = 'Unknown', userCountryCode = '';
+let selectedColor = COLORS[0];
+let allNotes = [];
+let activeCountry = null;
+let hasPosted = false;
+
+async function init() {
+  renderColorPicker();
+  await detectLocation();
+  await checkIfPosted();
+  loadNotes();
+}
+
+async function detectLocation() {
+  // Reuse stored hash if already detected AND country is known
+  const stored = localStorage.getItem('pinit_hash');
+  const storedCountry = localStorage.getItem('pinit_country');
+  if (stored && storedCountry && storedCountry !== 'Unknown') {
+    userIPHash = stored;
+    userCountry = storedCountry;
+    document.getElementById('preview-country').textContent = userCountry;
+    return;
+  }
+  // Call our own backend — avoids CORS issues
+  let ip = null, country = null, countryCode = null;
+  try {
+    const r = await fetch('/api/location');
+    const d = await r.json();
+    if (d.country && d.country !== 'Unknown') {
+      ip = d.ip; country = d.country; countryCode = d.countryCode;
+    }
+  } catch(e) {}
+
+  if (country) {
+    userCountry = country;
+    userCountryCode = countryCode || '';
+    userIPHash = await hashStr((ip||'x')+'pinit2024');
+    localStorage.setItem('pinit_hash', userIPHash);
+    localStorage.setItem('pinit_country', userCountry);
+    document.getElementById('preview-country').textContent = userCountry;
+  } else {
+    // Both APIs failed — generate stable fallback hash
+    if (!stored) {
+      const fallback = await hashStr('fb'+Math.random().toString(36));
+      userIPHash = fallback;
+      localStorage.setItem('pinit_hash', fallback);
+    } else {
+      userIPHash = stored;
+    }
+    localStorage.setItem('pinit_country', 'Unknown');
+    document.getElementById('preview-country').textContent = 'Unknown';
+  }
+}
+
+async function hashStr(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,32);
+}
+
+async function checkIfPosted() {
+  const today = new Date().toISOString().slice(0, 10);
+  // Check localStorage — but only if it was set today
+  const storedDate = localStorage.getItem('pinit_posted_date');
+  if (storedDate === today) {
+    hasPosted = true;
+    document.getElementById('open-modal-btn').textContent = "Trace left today";
+    document.getElementById('open-modal-btn').disabled = true;
+    document.getElementById('find-my-note-btn').style.display = 'inline-flex';
+    return;
+  }
+  // New day — clear old flag and check database
+  localStorage.removeItem('pinit_posted');
+  localStorage.removeItem('pinit_posted_date');
+  const {data} = await sb.from('submissions').select('id').eq('ip_hash', userIPHash).eq('sub_date', today).maybeSingle();
+  hasPosted = !!data;
+  if (hasPosted) {
+    localStorage.setItem('pinit_posted_date', today);
+    document.getElementById('open-modal-btn').textContent = "Trace left today";
+    document.getElementById('open-modal-btn').disabled = true;
+    document.getElementById('find-my-note-btn').style.display = 'inline-flex';
+  }
+}
+
+function renderColorPicker() {
+  const picker = document.getElementById('color-picker');
+  picker.innerHTML = COLORS.map(c=>`
+    <div class="color-opt${c===selectedColor?' selected':''}" style="background:${c};" onclick="selectColor('${c}', this)" title="${c}"></div>
+  `).join('');
+}
+
+function selectColor(color, el) {
+  selectedColor = color;
+  document.querySelectorAll('.color-opt').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('note-preview').style.background = color;
+}
+
+function onNoteInput(el) {
+  const words = el.value.trim().split(/\s+/).filter(Boolean);
+  const wc = words.length;
+  document.getElementById('word-count').textContent = wc;
+  if (wc > 60) {
+    el.value = words.slice(0,60).join(' ');
+    document.getElementById('word-count').textContent = 60;
+  }
+}
+
+async function moderate(text) {
+  try {
+    const r = await fetch('/api/moderate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text})
+    });
+    return await r.json();
+  } catch(e) {
+    return {safe:true};
+  }
+}
+
+async function loadNotes() {
+  const {data, error} = await sb.from('notes').select('*').order('created_at', {ascending:false});
+  if (error || !data) { document.getElementById('wall').innerHTML='<div class="empty"><p>No notes yet.</p><small>Be the first to leave your mark.</small></div>'; return; }
+  allNotes = data;
+  updateStats(data);
+}
+
+function updateStats(notes) {
+  document.getElementById('stat-notes').textContent = notes.length.toLocaleString();
+  const countries = new Set(notes.map(n=>n.country).filter(Boolean));
+}
+
+
+
+
+function isLight(hex) {
+  if (!hex || hex[0]!=='#') return true;
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return (r*299 + g*587 + b*114) / 1000 > 128;
+}
+
+function openModal() {
+  if (hasPosted) return;
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('note-input').focus();
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  clearAlerts();
+}
+
+function clearAlerts() {
+  const e = document.getElementById('modal-alert-error');
+  const w = document.getElementById('modal-alert-warn');
+  e.classList.remove('show'); e.textContent='';
+  w.classList.remove('show'); w.textContent='';
+}
+
+async function submitNote() {
+  const content = document.getElementById('note-input').value.trim();
+  const alias = document.getElementById('alias-input').value.trim();
+  clearAlerts();
+
+  if (!content) { showAlert('error', 'Write something on your note first.'); return; }
+  if (!alias) { showAlert('error', 'Tell the world what to call you.'); return; }
+  if (content.split(/\s+/).filter(Boolean).length < 3) { showAlert('error', 'Say a little more — at least 3 words.'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Pinning to the wall...';
+
+  // Check if already posted
+  const _checkDate = new Date().toISOString().slice(0, 10);
+  const {data: existing} = await sb.from('submissions').select('id').eq('ip_hash', userIPHash).eq('sub_date', _checkDate).maybeSingle();
+  if (existing) {
+    showAlert('warn', 'You have already pinned a note today. Come back tomorrow.');
+    btn.disabled=false; btn.innerHTML='Pin my note to the wall &rarr;';
+    return;
+  }
+
+  // Moderate
+  const mod = await moderate(content + ' ' + alias);
+  if (!mod.safe) {
+    showAlert('error', 'Not accepted: ' + mod.reason + '. Please revise your note.');
+    btn.disabled=false; btn.innerHTML='Pin my note to the wall &rarr;';
+    return;
+  }
+
+  // Insert note
+  const today = new Date().toISOString().slice(0, 10);
+  const {error: noteErr} = await sb.from('notes').insert({
+    content, alias, color: selectedColor,
+    country: userCountry, country_code: userCountryCode,
+    ip_hash: userIPHash, note_date: today
+  });
+
+  if (noteErr) {
+    showAlert('error', 'Something went wrong. Try again.');
+    btn.disabled=false; btn.innerHTML='Pin my note to the wall &rarr;';
+    return;
+  }
+
+  // Record submission (unique constraint prevents double posting)
+  const _today = new Date().toISOString().slice(0, 10);
+  await sb.from('submissions').insert({ ip_hash: userIPHash, sub_date: _today });
+
+  hasPosted = true;
+  const _postDate = new Date().toISOString().slice(0, 10);
+  localStorage.setItem('pinit_posted_date', _postDate);
+  document.getElementById('find-my-note-btn').style.display = 'inline-flex';
+  closeModal();
+  document.getElementById('open-modal-btn').textContent = 'Your note is on the wall';
+  document.getElementById('open-modal-btn').disabled = true;
+  btn.disabled=false; btn.innerHTML='Pin my note to the wall &rarr;';
+  showToast('Your note is pinned. Open the wall to find it.');
+  loadNotes();
+  setTimeout(() => { openMap(); setTimeout(() => findMyNote(), 1500); }, 600);
+}
+
+function showAlert(type, msg) {
+  const el = document.getElementById('modal-alert-' + type);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 4000);
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Close overlay on backdrop click
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+
+const COUNTRY_COORDS = {
+  "Afghanistan": [33.93911, 67.709953],
+  "Albania": [41.153332, 20.168331],
+  "Algeria": [28.033886, 1.659626],
+  "Angola": [-11.202692, 17.873887],
+  "Argentina": [-38.416097, -63.616672],
+  "Armenia": [40.069099, 45.038189],
+  "Australia": [-25.274398, 133.775136],
+  "Austria": [47.516231, 14.550072],
+  "Azerbaijan": [40.143105, 47.576927],
+  "Bahrain": [26.0275, 50.55],
+  "Bangladesh": [23.684994, 90.356331],
+  "Belarus": [53.709807, 27.953389],
+  "Belgium": [50.503887, 4.469936],
+  "Bolivia": [-16.290154, -63.588653],
+  "Bosnia and Herzegovina": [43.915886, 17.679076],
+  "Brazil": [-14.235004, -51.92528],
+  "Bulgaria": [42.733883, 25.48583],
+  "Cambodia": [12.565679, 104.990963],
+  "Cameroon": [7.369722, 12.354722],
+  "Canada": [56.130366, -106.346771],
+  "Chile": [-35.675147, -71.542969],
+  "China": [35.86166, 104.195397],
+  "Colombia": [4.570868, -74.297333],
+  "Congo": [-0.228021, 15.827659],
+  "Costa Rica": [9.748917, -83.753428],
+  "Croatia": [45.1, 15.2],
+  "Cuba": [21.521757, -77.781167],
+  "Czech Republic": [49.817492, 15.472962],
+  "Denmark": [56.26392, 9.501785],
+  "Dominican Republic": [18.735693, -70.162651],
+  "Ecuador": [-1.831239, -78.183406],
+  "Egypt": [26.820553, 30.802498],
+  "El Salvador": [13.794185, -88.89653],
+  "Ethiopia": [9.145, 40.489673],
+  "Finland": [61.92411, 25.748151],
+  "France": [46.227638, 2.213749],
+  "Georgia": [42.315407, 43.356892],
+  "Germany": [51.165691, 10.451526],
+  "Ghana": [7.946527, -1.023194],
+  "Greece": [39.074208, 21.824312],
+  "Guatemala": [15.783471, -90.230759],
+  "Honduras": [15.199999, -86.241905],
+  "Hungary": [47.162494, 19.503304],
+  "India": [20.593684, 78.96288],
+  "Indonesia": [-0.789275, 113.921327],
+  "Iran": [32.427908, 53.688046],
+  "Iraq": [33.223191, 43.679291],
+  "Ireland": [53.41291, -8.24389],
+  "Israel": [31.046051, 34.851612],
+  "Italy": [41.87194, 12.56738],
+  "Jamaica": [18.109581, -77.297508],
+  "Japan": [36.204824, 138.252924],
+  "Jordan": [30.585164, 36.238414],
+  "Kazakhstan": [48.019573, 66.923684],
+  "Kenya": [-0.023559, 37.906193],
+  "Kuwait": [29.31166, 47.481766],
+  "Kyrgyzstan": [41.20438, 74.766098],
+  "Lebanon": [33.854721, 35.862285],
+  "Libya": [26.3351, 17.228331],
+  "Malaysia": [4.210484, 101.975766],
+  "Mexico": [23.634501, -102.552784],
+  "Morocco": [31.791702, -7.09262],
+  "Mozambique": [-18.665695, 35.529562],
+  "Myanmar": [21.913965, 95.956223],
+  "Nepal": [28.394857, 84.124008],
+  "Netherlands": [52.132633, 5.291266],
+  "New Zealand": [-40.900557, 174.885971],
+  "Nicaragua": [12.865416, -85.207229],
+  "Nigeria": [9.081999, 8.675277],
+  "North Korea": [40.339852, 127.510093],
+  "Norway": [60.472024, 8.468946],
+  "Oman": [21.512583, 55.923255],
+  "Pakistan": [30.375321, 69.345116],
+  "Palestine": [31.952162, 35.233154],
+  "Panama": [8.537981, -80.782127],
+  "Paraguay": [-23.442503, -58.443832],
+  "Peru": [-9.189967, -75.015152],
+  "Philippines": [12.879721, 121.774017],
+  "Poland": [51.919438, 19.145136],
+  "Portugal": [39.399872, -8.224454],
+  "Qatar": [25.354826, 51.183884],
+  "Romania": [45.943161, 24.96676],
+  "Russia": [61.52401, 105.318756],
+  "Saudi Arabia": [23.885942, 45.079162],
+  "Senegal": [14.497401, -14.452362],
+  "Serbia": [44.016521, 21.005859],
+  "Singapore": [1.352083, 103.819836],
+  "Somalia": [5.152149, 46.199616],
+  "South Africa": [-30.559482, 22.937506],
+  "South Korea": [35.907757, 127.766922],
+  "Spain": [40.463667, -3.74922],
+  "Sri Lanka": [7.873054, 80.771797],
+  "Sudan": [12.862807, 30.217636],
+  "Sweden": [60.128161, 18.643501],
+  "Switzerland": [46.818188, 8.227512],
+  "Syria": [34.802075, 38.996815],
+  "Taiwan": [23.69781, 120.960515],
+  "Tajikistan": [38.861034, 71.276093],
+  "Tanzania": [-6.369028, 34.888822],
+  "Thailand": [15.870032, 100.992541],
+  "Tunisia": [33.886917, 9.537499],
+  "Turkey": [38.963745, 35.243322],
+  "Turkmenistan": [38.969719, 59.556278],
+  "Uganda": [1.373333, 32.290275],
+  "Ukraine": [48.379433, 31.16558],
+  "United Arab Emirates": [23.424076, 53.847818],
+  "United Kingdom": [55.378051, -3.435973],
+  "United States": [37.09024, -95.712891],
+  "Uruguay": [-32.522779, -55.765835],
+  "Uzbekistan": [41.377491, 64.585262],
+  "Venezuela": [6.42375, -66.58973],
+  "Vietnam": [14.058324, 108.277199],
+  "Yemen": [15.552727, 48.516388],
+  "Zimbabwe": [-19.015438, 29.154857]
+};
+
+
+// ---- MAP ----
+let map = null;
+let mapMarkers = [];
+let mapNotes = [];
+
+let currentMapDate = new Date().toISOString().slice(0, 10);
+
+function openMap() {
+  currentMapDate = new Date().toISOString().slice(0, 10);
+  document.getElementById('map-overlay').classList.add('open');
+  window.location.hash = 'wall';
+  // Show find my note if user has posted any time
+  const postedDate = localStorage.getItem('pinit_posted_date');
+  if (postedDate) document.getElementById('find-my-note-btn').style.display = 'inline-flex';
+  if (!map) initMap();
+  else loadMapNotes();
+}
+
+function changeMapDate(dir) {
+  const d = new Date(currentMapDate);
+  d.setDate(d.getDate() + dir);
+  const today = new Date().toISOString().slice(0, 10);
+  if (d.toISOString().slice(0, 10) > today) return;
+  currentMapDate = d.toISOString().slice(0, 10);
+  loadMapNotes();
+}
+
+function closeMap() {
+  document.getElementById('map-overlay').classList.remove('open');
+  history.pushState('', document.title, window.location.pathname);
+}
+
+function findMyNote() {
+  const coords = COUNTRY_COORDS[userCountry];
+  if (!coords) { showToast('Could not locate your country.'); return; }
+  map.flyTo(coords, 6, { animate: true, duration: 1.2 });
+  // After flying, pulse dots in user country — no position changes
+  setTimeout(() => {
+    mapMarkers.forEach(m => {
+      if (m._noteCountry === userCountry) {
+        const el = m.getElement();
+        if (!el) return;
+        const dot = el.querySelector('.map-dot');
+        if (!dot) return;
+        dot.style.transform = 'scale(2.5)';
+        dot.style.transition = 'transform 0.3s';
+        setTimeout(() => { dot.style.transform = 'scale(1)'; }, 600);
+      }
+    });
+  }, 1400);
+}
+
+let realtimeChannel = null;
+
+function initMap() {
+  map = L.map('map', {
+    center: [20, 0],
+    zoom: 2,
+    minZoom: 2,
+    maxZoom: 10,
+    zoomControl: true,
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  loadMapNotes();
+  subscribeToNotes();
+}
+
+function subscribeToNotes() {
+  // Unsubscribe from any existing channel first
+  if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  realtimeChannel = sb.channel('notes-live')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'notes',
+      filter: `note_date=eq.${today}`
+    }, payload => {
+      const note = payload.new;
+      if (!note) return;
+      addNoteToMap(note);
+      // Update counters
+      const noteCountEl = document.getElementById('map-note-count');
+      if (noteCountEl) {
+        const current = parseInt(noteCountEl.textContent.replace(/,/g,'')) || 0;
+        noteCountEl.textContent = (current + 1).toLocaleString();
+      }
+      // Update landing stat too
+      const statEl = document.getElementById('stat-notes');
+      if (statEl) {
+        const current = parseInt(statEl.textContent.replace(/,/g,'')) || 0;
+        statEl.textContent = (current + 1).toLocaleString();
+      }
+    })
+    .subscribe();
+}
+
+function addNoteToMap(note) {
+  const coords = COUNTRY_COORDS[note.country];
+  if (!coords) return;
+  const scatter = 1.5;
+  note._lat = coords[0] + (Math.random() - 0.5) * scatter;
+  note._lng = coords[1] + (Math.random() - 0.5) * scatter;
+
+  const dotHtml = `<div class="map-dot" style="background:${note.color||'#fef08a'};"></div>`;
+  const icon = L.divIcon({ className: '', html: dotHtml, iconSize: [10,10], iconAnchor: [5,5] });
+  const marker = L.marker([note._lat, note._lng], { icon });
+  marker._note = note;
+  marker._noteCountry = note.country;
+  marker._isDot = true;
+  marker._isNew = true;
+  marker.addTo(map);
+  mapMarkers.push(marker);
+
+  // Briefly highlight new note
+  setTimeout(() => {
+    const el = marker.getElement();
+    if (el) {
+      el.style.transition = 'transform 0.4s, opacity 0.4s';
+      el.style.transform = 'scale(2.5)';
+      el.style.opacity = '0.5';
+      setTimeout(() => { el.style.transform = 'scale(1)'; el.style.opacity = '1'; }, 500);
+    }
+  }, 100);
+
+  // If zoomed in enough, show as card immediately
+  if (map.getZoom() >= NOTE_ZOOM_THRESHOLD) onZoomEnd();
+}
+
+async function loadMapNotes() {
+  const dateLabel = document.getElementById('map-date-label');
+  const today = new Date().toISOString().slice(0, 10);
+  dateLabel.textContent = currentMapDate === today ? 'Today' : currentMapDate;
+  document.getElementById('map-next-btn').style.opacity = currentMapDate === today ? '0.3' : '1';
+  document.getElementById('map-next-btn').style.pointerEvents = currentMapDate === today ? 'none' : 'auto';
+  const { data, error } = await sb.from('notes').select('*').eq('note_date', currentMapDate).order('created_at', { ascending: false });
+  if (error || !data) return;
+  mapNotes = data;
+
+  const countries = new Set(data.map(n => n.country).filter(Boolean));
+  const noteCountEl = document.getElementById('map-note-count');
+  const countryCountEl = document.getElementById('map-country-count');
+  if (noteCountEl) noteCountEl.textContent = data.length.toLocaleString();
+  if (countryCountEl) countryCountEl.textContent = countries.size;
+
+  // Clear existing markers
+  mapMarkers.forEach(m => map.removeLayer(m));
+  mapMarkers = [];
+
+  // Group notes by country
+  const byCountry = {};
+  data.forEach(note => {
+    const c = note.country || 'Unknown';
+    if (!byCountry[c]) byCountry[c] = [];
+    byCountry[c].push(note);
+  });
+
+  Object.entries(byCountry).forEach(([country, notes]) => {
+    const coords = COUNTRY_COORDS[country];
+    if (!coords) return;
+
+    // Scatter notes within country bounds
+    notes.forEach((note, i) => {
+      const scatter = 1.5;
+      if (!note._lat) {
+        note._lat = coords[0] + (Math.random() - 0.5) * scatter;
+        note._lng = coords[1] + (Math.random() - 0.5) * scatter;
+      }
+
+      const textColor = isLightColor(note.color) ? '#1a1612' : '#f5f0e8';
+      const mutedColor = isLightColor(note.color) ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
+
+      // Build both icon styles
+      const dotHtml = `<div class="map-dot" style="background:${note.color||'#fef08a'};"></div>`;
+
+      const noteHtml = `<div class="map-note-card" style="background:${note.color||'#fef08a'};">
+        <div class="map-note-pin"></div>
+        <div class="map-note-text" style="color:${textColor};">${escHtml(note.content)}</div>
+        <div class="map-note-footer" style="border-top-color:${textColor==='#1a1612'?'rgba(0,0,0,0.1)':'rgba(255,255,255,0.15)'};">
+          <span style="color:${mutedColor};">${escHtml(note.alias)}</span>
+          <span style="color:${mutedColor};">${escHtml(note.country||'Unknown')}</span>
+        </div>
+      </div>`;
+
+      const icon = L.divIcon({ className: '', html: dotHtml, iconSize: [12,12], iconAnchor: [6,6] });
+      const marker = L.marker([note._lat, note._lng], { icon, zIndexOffset: 0 });
+      marker._note = note;
+      marker._noteCountry = country;
+      marker._isDot = true;
+
+      // Click always shows note popup regardless of zoom
+      marker.on('click', function() {
+        const n = this._note;
+        const tc = isLightColor(n.color) ? '#1a1612' : '#f5f0e8';
+        const mc = isLightColor(n.color) ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
+        const html = `<div class="note-popup"><div class="note-popup-inner" style="background:${n.color||'#fef08a'};"><div class="note-popup-text" style="color:${tc};">${escHtml(n.content)}</div><div class="note-popup-footer"><span style="color:${mc};">${escHtml(n.alias)}</span><span style="color:${mc};">${escHtml(n.country||'Unknown')}</span></div></div></div>`;
+        L.popup({ maxWidth: 240, className: 'note-popup-wrap', closeButton: true })
+          .setLatLng(this.getLatLng())
+          .setContent(html)
+          .openOn(map);
+      });
+
+      marker.addTo(map);
+      mapMarkers.push(marker);
+    });
+  });
+
+  // Listen to zoom and switch between dot and card icons
+  map.off('zoomend', onZoomEnd);
+  map.on('zoomend', onZoomEnd);
+  onZoomEnd();
+}
+
+const NOTE_ZOOM_THRESHOLD = 999; // Disabled — notes shown on click instead
+
+function onZoomEnd() {
+  const z = map.getZoom();
+  const showCards = z >= NOTE_ZOOM_THRESHOLD;
+  mapMarkers.forEach(marker => {
+    const note = marker._note;
+    if (!note) return;
+    const textColor = isLightColor(note.color) ? '#1a1612' : '#f5f0e8';
+    const mutedColor = isLightColor(note.color) ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
+    if (showCards && marker._isDot) {
+      const noteHtml = buildNoteCardHtml(note, textColor, mutedColor);
+      const cardIcon = L.divIcon({ className: '', html: noteHtml, iconSize: [160,10], iconAnchor: [80,5] });
+      marker.setIcon(cardIcon);
+      marker._isDot = false;
+    } else if (!showCards && !marker._isDot) {
+      const dotHtml = `<div class="map-dot" style="background:${note.color||'#fef08a'};"></div>`;
+      const dotIcon = L.divIcon({ className: '', html: dotHtml, iconSize: [13,13], iconAnchor: [6,6] });
+      marker.setIcon(dotIcon);
+      marker._isDot = true;
+    }
+  });
+}
+
+function buildNoteCardHtml(note, textColor, mutedColor) {
+  return `<div class="map-note-card" style="background:${note.color||'#fef08a'};">
+    <div class="map-note-pin"></div>
+    <div class="map-note-text" style="color:${textColor};">${escHtml(note.content)}</div>
+    <div class="map-note-footer" style="border-top-color:${textColor==='#1a1612'?'rgba(0,0,0,0.1)':'rgba(255,255,255,0.15)'};">
+      <span style="color:${mutedColor};">${escHtml(note.alias)}</span>
+      <span style="color:${mutedColor};">${escHtml(note.country||'Unknown')}</span>
+    </div>
+  </div>`;
+}
+
+function showNotePopup(note, marker) {
+  const textColor = isLightColor(note.color) ? '#1a1612' : '#f5f0e8';
+  const mutedColor = isLightColor(note.color) ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
+  const popup = L.popup({ maxWidth: 240, className: 'note-popup-wrap', closeButton: true, autoClose: true })
+    .setLatLng(marker.getLatLng())
+    .setContent(`
+      <div style="background:${note.color||'#fef08a'};border-radius:3px;padding:12px 12px 8px;min-width:180px;">
+        <div style="font-family:'Caveat',cursive;font-size:17px;line-height:1.5;color:${textColor};margin-bottom:8px;">${escHtml(note.content)}</div>
+        <div style="display:flex;justify-content:space-between;font-family:'DM Sans',sans-serif;font-size:11px;color:${mutedColor};border-top:1px solid ${textColor==='#1a1612'?'rgba(0,0,0,0.1)':'rgba(255,255,255,0.15)'};padding-top:6px;">
+          <span>${escHtml(note.alias)}</span>
+          <span>${escHtml(note.country||'Unknown')}</span>
+        </div>
+      </div>`)
+    .openOn(map);
+}
+
+function isLightColor(hex) {
+  if (!hex || hex[0] !== '#') return true;
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return (r*299 + g*587 + b*114) / 1000 > 128;
+}
+
+// Auto-open map if URL has #wall
+if (window.location.hash === '#wall') {
+  document.addEventListener('DOMContentLoaded', () => openMap());
+}
+
+init();
+</script>
+</body>
+</html>

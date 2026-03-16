@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinit — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #faf7f2; --surface: #f2ede4; --card: #ffffff;
+  --border: #e2dbd0; --text: #2c2520; --muted: #9a8f85;
+  --gold: #b8894a; --terra: #c4714a; --red: #b94040; --green: #3a7d5a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* Login screen */
+.login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 2.5rem; width: 100%; max-width: 360px; text-align: center; }
+.login-box h1 { font-size: 20px; font-weight: 500; margin-bottom: 0.25rem; }
+.login-box p { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; }
+.login-box input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 2px; padding: 10px 12px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; margin-bottom: 1rem; text-align: center; letter-spacing: 0.15em; }
+.login-box input:focus { border-color: var(--gold); }
+.login-error { font-size: 12px; color: var(--red); margin-bottom: 0.75rem; display: none; }
+.login-error.show { display: block; }
+
+/* Main admin */
+.admin { display: none; }
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+.topbar-brand { font-size: 16px; font-weight: 500; }
+.topbar-brand span { color: var(--gold); }
+.topbar-stats { display: flex; gap: 1.5rem; }
+.tstat { font-size: 12px; color: var(--muted); }
+.tstat strong { color: var(--text); font-weight: 500; }
+.logout-btn { font-size: 12px; color: var(--muted); background: none; border: 1px solid var(--border); padding: 5px 12px; border-radius: 2px; cursor: pointer; transition: color 0.2s; }
+.logout-btn:hover { color: var(--text); }
+
+/* Toolbar */
+.toolbar { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.search-input { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 2px; padding: 7px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; width: 220px; transition: border-color 0.2s; }
+.search-input:focus { border-color: var(--gold); }
+.search-input::placeholder { color: var(--muted); }
+.filter-select { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 2px; padding: 7px 12px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; cursor: pointer; }
+.filter-select option { background: var(--card); }
+.toolbar-right { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+/* Notes table */
+.table-wrap { padding: 1.5rem; }
+.notes-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.notes-table th { text-align: left; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 0 12px 10px; border-bottom: 1px solid var(--border); }
+.notes-table td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.notes-table tr:hover td { background: rgba(255,255,255,0.02); }
+.note-color-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0; }
+.note-content { max-width: 340px; line-height: 1.5; color: var(--text); }
+.note-alias { font-weight: 500; color: var(--gold); }
+.note-country { color: var(--muted); font-size: 12px; }
+.note-date { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.delete-btn { background: none; border: 1px solid rgba(224,85,85,0.3); color: var(--red); font-size: 12px; padding: 4px 10px; border-radius: 2px; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+.delete-btn:hover { background: rgba(224,85,85,0.1); }
+
+/* Confirm modal */
+.confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: none; align-items: center; justify-content: center; }
+.confirm-overlay.open { display: flex; }
+.confirm-box { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 1.75rem; max-width: 380px; width: 90%; }
+.confirm-box h3 { font-size: 16px; font-weight: 500; margin-bottom: 0.5rem; }
+.confirm-box p { font-size: 13px; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.6; }
+.confirm-note-preview { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 2px; padding: 10px 12px; font-size: 13px; color: var(--text); line-height: 1.5; margin-bottom: 1.25rem; max-height: 100px; overflow-y: auto; }
+.confirm-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.btn-cancel { background: none; border: 1px solid var(--border); color: var(--muted); font-size: 13px; padding: 7px 16px; border-radius: 2px; cursor: pointer; }
+.btn-cancel:hover { color: var(--text); }
+.btn-delete { background: var(--red); border: none; color: #fff; font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 2px; cursor: pointer; opacity: 1; transition: opacity 0.2s; }
+.btn-delete:hover { opacity: 0.85; }
+
+.loading { text-align: center; padding: 4rem; color: var(--muted); font-size: 14px; }
+.empty { text-align: center; padding: 4rem; color: var(--muted); font-size: 14px; }
+.toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--green); color: #fff; font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: 2px; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; z-index: 300; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.btn { background: var(--gold); color: #1a1612; font-size: 13px; font-weight: 500; border: none; padding: 8px 18px; border-radius: 2px; cursor: pointer; transition: opacity 0.2s; }
+.btn:hover { opacity: 0.88; }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <h1>Pinit Admin</h1>
+    <p>Enter your password to continue</p>
+    <input type="password" id="password-input" placeholder="••••••••" onkeydown="if(event.key==='Enter') login()" />
+    <div class="login-error" id="login-error">Incorrect password</div>
+    <button class="btn" onclick="login()" style="width:100%;">Enter</button>
+  </div>
+</div>
+
+<!-- Admin Panel -->
+<div class="admin" id="admin-panel">
+  <div class="topbar">
+    <div class="topbar-brand">Pinit <span>Admin</span></div>
+    <div class="topbar-stats">
+      <div class="tstat">Total notes: <strong id="total-notes">—</strong></div>
+      <div class="tstat">Countries: <strong id="total-countries">—</strong></div>
+      <div class="tstat">Showing: <strong id="showing-count">—</strong></div>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" class="search-input" id="search-input" placeholder="Search notes..." oninput="applyFilters()" />
+    <select class="filter-select" id="country-filter" onchange="applyFilters()">
+      <option value="">All countries</option>
+    </select>
+    <button class="btn" onclick="loadNotes()" style="padding:7px 14px;font-size:12px;">Refresh</button>
+    <div class="toolbar-right" id="toolbar-right"></div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="notes-table">
+      <thead>
+        <tr>
+          <th style="width:16px;"></th>
+          <th>Note</th>
+          <th>Name</th>
+          <th>Country</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="notes-tbody"></tbody>
+    </table>
+    <div id="table-status"></div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3>Delete this note?</h3>
+    <p>This cannot be undone. The note will be permanently removed from the wall.</p>
+    <div class="confirm-note-preview" id="confirm-preview"></div>
+    <div class="confirm-actions">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancel</button>
+      <button class="btn-delete" onclick="confirmDelete()">Delete permanently</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://udzxqigctbrpandqmzev.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkenhxaWdjdGJycGFuZHFtemV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NjQ1NzMsImV4cCI6MjA4OTE0MDU3M30.ZR5L_90-ztWz_D-gVbSIwQFEnrqa3XDBZCmRjzB5EEs';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Change this password to something only you know
+const ADMIN_PASSWORD = 'pinit@admin2024';
+
+let allNotes = [];
+let pendingDeleteId = null;
+
+function login() {
+  const pw = document.getElementById('password-input').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    sessionStorage.setItem('pinit_admin', 'true');
+    loadNotes();
+  } else {
+    document.getElementById('login-error').classList.add('show');
+    document.getElementById('password-input').value = '';
+    document.getElementById('password-input').focus();
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('pinit_admin');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('password-input').value = '';
+}
+
+async function loadNotes() {
+  document.getElementById('table-status').innerHTML = '<div class="loading">Loading notes...</div>';
+  document.getElementById('notes-tbody').innerHTML = '';
+  const { data, error } = await sb.from('notes').select('*').order('created_at', { ascending: false });
+  if (error || !data) { document.getElementById('table-status').innerHTML = '<div class="empty">Failed to load notes.</div>'; return; }
+  allNotes = data;
+  document.getElementById('table-status').innerHTML = '';
+  document.getElementById('total-notes').textContent = data.length.toLocaleString();
+  const countries = [...new Set(data.map(n => n.country).filter(Boolean))].sort();
+  document.getElementById('total-countries').textContent = countries.length;
+  const sel = document.getElementById('country-filter');
+  sel.innerHTML = '<option value="">All countries</option>';
+  countries.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+  applyFilters();
+}
+
+function applyFilters() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const country = document.getElementById('country-filter').value;
+  let filtered = allNotes;
+  if (country) filtered = filtered.filter(n => n.country === country);
+  if (search) filtered = filtered.filter(n =>
+    (n.content || '').toLowerCase().includes(search) ||
+    (n.alias || '').toLowerCase().includes(search) ||
+    (n.country || '').toLowerCase().includes(search)
+  );
+  document.getElementById('showing-count').textContent = filtered.length;
+  renderTable(filtered);
+}
+
+function renderTable(notes) {
+  const tbody = document.getElementById('notes-tbody');
+  if (!notes.length) { tbody.innerHTML = ''; document.getElementById('table-status').innerHTML = '<div class="empty">No notes match your search.</div>'; return; }
+  document.getElementById('table-status').innerHTML = '';
+  tbody.innerHTML = notes.map(n => `
+    <tr>
+      <td><span class="note-color-dot" style="background:${escHtml(n.color||'#fef08a')};"></span></td>
+      <td><div class="note-content">${escHtml(n.content)}</div></td>
+      <td><div class="note-alias">${escHtml(n.alias)}</div></td>
+      <td><div class="note-country">${escHtml(n.country||'Unknown')}</div></td>
+      <td><div class="note-date">${formatDate(n.created_at)}</div></td>
+      <td><button class="delete-btn" onclick="openConfirm('${n.id}', \`${escJs(n.content)}\`)">Delete</button></td>
+    </tr>
+  `).join('');
+}
+
+function openConfirm(id, content) {
+  pendingDeleteId = id;
+  document.getElementById('confirm-preview').textContent = content;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+
+function closeConfirm() {
+  pendingDeleteId = null;
+  document.getElementById('confirm-overlay').classList.remove('open');
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteId) return;
+  const { error } = await sb.from('notes').delete().eq('id', pendingDeleteId);
+  if (error) { showToast('Delete failed. Try again.'); closeConfirm(); return; }
+  allNotes = allNotes.filter(n => n.id !== pendingDeleteId);
+  closeConfirm();
+  showToast('Note deleted.');
+  applyFilters();
+  document.getElementById('total-notes').textContent = allNotes.length.toLocaleString();
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function escJs(s) {
+  if (!s) return '';
+  return String(s).replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
+}
+
+// Auto-login if session exists
+if (sessionStorage.getItem('pinit_admin') === 'true') {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'block';
+  loadNotes();
+}
+
+// Close confirm on backdrop click
+document.getElementById('confirm-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+</script>
+</body>
+</html>
