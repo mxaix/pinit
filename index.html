@@ -275,6 +275,18 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   </div>
 </div>
 
+<!-- Live note panel -->
+<div class="live-note" id="live-note-panel" style="opacity:0;">
+  <div class="live-note-card" id="live-note-card">
+    <div class="live-note-label"><span class="live-dot"></span>Latest note today</div>
+    <div class="live-note-text" id="live-note-text"></div>
+    <div class="live-note-footer">
+      <span id="live-note-alias"></span>
+      <span id="live-note-country"></span>
+    </div>
+  </div>
+</div>
+
 <!-- Map Overlay -->
 <div class="map-overlay" id="map-overlay">
   <div class="map-topbar">
@@ -558,6 +570,7 @@ async function submitNote() {
   document.getElementById('open-modal-btn').disabled = true;
   btn.disabled=false; btn.innerHTML='Pin my note to the wall &rarr;';
   showToast('Your note is pinned. Open the wall to find it.');
+  loadLiveNotes();
   loadNotes();
   setTimeout(() => { openMap(); setTimeout(() => findMyNote(), 1500); }, 600);
 }
@@ -776,6 +789,7 @@ function initMap() {
 }
 
 function subscribeToNotes() {
+  // Also update live note panel in real time
   // Unsubscribe from any existing channel first
   if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
 
@@ -797,6 +811,8 @@ function subscribeToNotes() {
         const current = parseInt(noteCountEl.textContent.replace(/,/g,'')) || 0;
         noteCountEl.textContent = (current + 1).toLocaleString();
       }
+      // Refresh live note panel
+      loadLiveNotes();
       // Update landing stat too
       const statEl = document.getElementById('stat-notes');
       if (statEl) {
@@ -980,6 +996,46 @@ function isLightColor(hex) {
   const g = parseInt(hex.slice(3,5),16);
   const b = parseInt(hex.slice(5,7),16);
   return (r*299 + g*587 + b*114) / 1000 > 128;
+}
+
+
+// ── Live note panel ───────────────────────────────────────
+var liveNotes = [];
+var liveNoteIndex = 0;
+
+async function loadLiveNotes() {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await sb.from('notes').select('content,alias,country,color').eq('note_date', today).order('created_at', { ascending: false }).limit(20);
+  if (data && data.length) {
+    liveNotes = data;
+    showLiveNote();
+    setInterval(rotateLiveNote, 6000);
+  }
+}
+
+function showLiveNote(idx) {
+  if (!liveNotes.length) return;
+  var note = liveNotes[liveNoteIndex];
+  var panel = document.getElementById('live-note-panel');
+  var textEl = document.getElementById('live-note-text');
+  var aliasEl = document.getElementById('live-note-alias');
+  var countryEl = document.getElementById('live-note-country');
+  if (!panel || !textEl) return;
+
+  // Fade out
+  panel.style.opacity = '0';
+  setTimeout(function() {
+    textEl.textContent = note.content;
+    aliasEl.textContent = note.alias || '';
+    countryEl.textContent = note.country || '';
+    // Fade in
+    panel.style.opacity = '1';
+  }, 400);
+}
+
+function rotateLiveNote() {
+  liveNoteIndex = (liveNoteIndex + 1) % liveNotes.length;
+  showLiveNote();
 }
 
 // Auto-open map if URL has #wall
