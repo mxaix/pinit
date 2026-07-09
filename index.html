@@ -844,6 +844,110 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .archive-topbar { padding: 0.75rem 1rem; }
 }
 
+/* Share overlay */
+.share-overlay {
+  position: fixed; inset: 0;
+  background: rgba(4, 6, 15, 0.72);
+  backdrop-filter: blur(6px);
+  z-index: 250;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+.share-overlay.open { display: flex; }
+.share-modal {
+  background: #1a1814;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.45);
+}
+.share-modal h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #f5f0e8;
+  margin-bottom: 0.35rem;
+}
+.share-modal > p.share-lead {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 1rem;
+  line-height: 1.55;
+}
+.share-message-box {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #f5c49a;
+  line-height: 1.55;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+.share-preview-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #04060f;
+}
+#share-canvas {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+}
+.share-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.share-btn {
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 11px 16px;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+.share-btn-primary {
+  background: linear-gradient(135deg, #d4824a, #b35e38);
+  color: #fff;
+}
+.share-btn-primary:hover { opacity: 0.9; }
+.share-btn-secondary {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(245,240,232,0.85);
+}
+.share-btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.share-btn-ghost {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+  padding: 8px;
+}
+.share-btn-ghost:hover { color: rgba(255,255,255,0.7); }
+.share-modal .modal-close { color: rgba(255,255,255,0.4); }
+.share-modal .modal-close:hover { color: #f5c49a; }
+
+@media (max-width: 480px) {
+  .share-modal { padding: 1.25rem; }
+}
+
 /* Solar system canvas */
 
 /* Make landing text readable over space bg */
@@ -1009,6 +1113,26 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 
 <div class="toast" id="toast"></div>
 
+<!-- Share overlay (after posting) -->
+<div class="share-overlay" id="share-overlay">
+  <div class="share-modal">
+    <button class="modal-close" onclick="closeShare()" aria-label="Close">&times;</button>
+    <h2>Your trace is live</h2>
+    <p class="share-lead">Share it with someone — or keep it as your quiet mark on the world.</p>
+    <div class="share-message-box" id="share-message-text">I left my trace today on Pinit.</div>
+    <div class="share-preview-wrap">
+      <canvas id="share-canvas" width="1080" height="1080"></canvas>
+    </div>
+    <div class="share-actions">
+      <button type="button" class="share-btn share-btn-primary" onclick="copyShareText()">Copy message</button>
+      <button type="button" class="share-btn share-btn-secondary" id="share-native-btn" onclick="shareNative()">Share&hellip;</button>
+      <button type="button" class="share-btn share-btn-secondary" onclick="downloadShareCard()">Download card</button>
+      <button type="button" class="share-btn share-btn-secondary" onclick="closeShareAndMap()">View on map &rarr;</button>
+      <button type="button" class="share-btn share-btn-ghost" onclick="closeShare()">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var SUPABASE_URL = 'https://udzxqigctbrpandqmzev.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkenhxaWdjdGJycGFuZHFtemV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NjQ1NzMsImV4cCI6MjA4OTE0MDU3M30.ZR5L_90-ztWz_D-gVbSIwQFEnrqa3XDBZCmRjzB5EEs';
@@ -1046,6 +1170,7 @@ var userIPHash = null, userCountry = 'Unknown', userCountryCode = '';
 var selectedColor = COLORS[0];
 var selectedMood = null;
 var hasPosted = false;
+var lastPostedNote = null;
 
 async function init() {
   renderColorPicker();
@@ -1337,11 +1462,19 @@ async function submitNote() {
   document.getElementById('open-modal-btn').textContent = 'Your note is on the wall';
   document.getElementById('open-modal-btn').disabled = true;
   btn.disabled=false; btn.innerHTML='Pin my note to the wall &rarr;';
-  showToast('Your note is pinned. Open the wall to find it.');
+
+  lastPostedNote = {
+    content: content,
+    alias: alias,
+    color: selectedColor,
+    country: userCountry,
+    mood: selectedMood || null
+  };
+
   loadStickyNotes();
   loadNotes();
   loadWorldFeeling();
-  setTimeout(() => { openMap(); setTimeout(() => findMyNote(), 1500); }, 600);
+  showShareOverlay();
 }
 
 function showAlert(type, msg) {
@@ -1357,6 +1490,225 @@ function showToast(msg) {
   setTimeout(()=>t.classList.remove('show'), 4000);
 }
 
+// ---- SHARE ----
+function getShareUrl() {
+  return window.location.origin + window.location.pathname;
+}
+
+function getShareText() {
+  return 'I left my trace today on Pinit.';
+}
+
+function getFullShareMessage() {
+  return getShareText() + ' ' + getShareUrl();
+}
+
+function showShareOverlay() {
+  var overlay = document.getElementById('share-overlay');
+  var nativeBtn = document.getElementById('share-native-btn');
+  if (!overlay) return;
+  document.getElementById('share-message-text').textContent = getShareText();
+  if (nativeBtn) {
+    nativeBtn.style.display = navigator.share ? 'block' : 'none';
+  }
+  renderShareCanvas();
+  overlay.classList.add('open');
+}
+
+function closeShare() {
+  var overlay = document.getElementById('share-overlay');
+  if (overlay) overlay.classList.remove('open');
+}
+
+function closeShareAndMap() {
+  closeShare();
+  openMap();
+  setTimeout(function() { findMyNote(); }, 1500);
+}
+
+async function copyShareText() {
+  try {
+    await navigator.clipboard.writeText(getFullShareMessage());
+    showToast('Message copied to clipboard.');
+  } catch (e) {
+    showToast('Could not copy — try selecting the text manually.');
+  }
+}
+
+async function shareNative() {
+  if (!navigator.share) {
+    copyShareText();
+    return;
+  }
+  try {
+    var canvas = document.getElementById('share-canvas');
+    var shareData = {
+      title: 'Pinit',
+      text: getShareText(),
+      url: getShareUrl()
+    };
+    if (canvas && navigator.canShare) {
+      canvas.toBlob(async function(blob) {
+        if (blob) {
+          var file = new File([blob], 'pinit-trace.png', { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({ title: 'Pinit', text: getShareText(), files: [file] });
+              return;
+            } catch (err) {
+              if (err.name === 'AbortError') return;
+            }
+          }
+        }
+        try {
+          await navigator.share(shareData);
+        } catch (err2) {
+          if (err2.name !== 'AbortError') copyShareText();
+        }
+      }, 'image/png');
+      return;
+    }
+    await navigator.share(shareData);
+  } catch (e) {
+    if (e.name !== 'AbortError') copyShareText();
+  }
+}
+
+function downloadShareCard() {
+  var canvas = document.getElementById('share-canvas');
+  if (!canvas) return;
+  var link = document.createElement('a');
+  link.download = 'pinit-trace.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('Card downloaded.');
+}
+
+function wrapCanvasText(ctx, text, maxWidth) {
+  var words = text.split(/\s+/);
+  var lines = [];
+  var line = '';
+  words.forEach(function(word) {
+    var test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  });
+  if (line) lines.push(line);
+  return lines;
+}
+
+function renderShareCanvas() {
+  var canvas = document.getElementById('share-canvas');
+  if (!canvas || !lastPostedNote) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width;
+  var h = canvas.height;
+  var note = lastPostedNote;
+
+  // Background — deep space
+  var bg = ctx.createLinearGradient(0, 0, w, h);
+  bg.addColorStop(0, '#04060f');
+  bg.addColorStop(0.5, '#0a1228');
+  bg.addColorStop(1, '#1a1020');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+
+  // Stars
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  for (var s = 0; s < 60; s++) {
+    var sx = ((s * 137) % 1000) / 1000 * w;
+    var sy = ((s * 89) % 1000) / 1000 * h;
+    var sr = (s % 3) * 0.5 + 0.5;
+    ctx.beginPath();
+    ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Brand
+  ctx.fillStyle = 'rgba(201,168,76,0.9)';
+  ctx.font = '500 28px DM Sans, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('PINIT', w / 2, 120);
+  ctx.fillStyle = 'rgba(245,196,154,0.7)';
+  ctx.font = 'italic 32px Playfair Display, Georgia, serif';
+  ctx.fillText('I left my trace today.', w / 2, 175);
+
+  // Sticky note
+  var nw = 720;
+  var nh = 480;
+  var nx = (w - nw) / 2;
+  var ny = 240;
+  var noteColor = note.color || '#fef08a';
+  ctx.save();
+  ctx.translate(nx + nw / 2, ny + nh / 2);
+  ctx.rotate(-0.02);
+  ctx.translate(-(nx + nw / 2), -(ny + nh / 2));
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
+  ctx.shadowBlur = 40;
+  ctx.shadowOffsetY = 16;
+  ctx.fillStyle = noteColor;
+  ctx.fillRect(nx, ny, nw, nh);
+  ctx.shadowColor = 'transparent';
+
+  // Pin
+  ctx.beginPath();
+  ctx.arc(nx + nw / 2, ny - 8, 14, 0, Math.PI * 2);
+  var pinGrad = ctx.createRadialGradient(nx + nw / 2 - 4, ny - 12, 2, nx + nw / 2, ny - 8, 14);
+  pinGrad.addColorStop(0, '#ececec');
+  pinGrad.addColorStop(1, '#888');
+  ctx.fillStyle = pinGrad;
+  ctx.fill();
+
+  // Note text
+  var light = isLightBg(noteColor);
+  var tc = light ? '#1a1612' : '#f5f0e8';
+  var mc = light ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.5)';
+  ctx.fillStyle = tc;
+  ctx.font = '48px Caveat, cursive';
+  ctx.textAlign = 'left';
+  var excerpt = note.content.length > 180 ? note.content.slice(0, 177) + '…' : note.content;
+  var lines = wrapCanvasText(ctx, excerpt, nw - 80);
+  var lineY = ny + 70;
+  lines.slice(0, 6).forEach(function(ln) {
+    ctx.fillText(ln, nx + 40, lineY);
+    lineY += 58;
+  });
+
+  // Footer line
+  ctx.strokeStyle = light ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(nx + 40, ny + nh - 70);
+  ctx.lineTo(nx + nw - 40, ny + nh - 70);
+  ctx.stroke();
+
+  ctx.fillStyle = mc;
+  ctx.font = '600 26px DM Sans, sans-serif';
+  ctx.fillText(note.alias || 'Anonymous', nx + 40, ny + nh - 35);
+  ctx.textAlign = 'right';
+  ctx.fillText(note.country || '', nx + nw - 40, ny + nh - 35);
+  if (note.mood) {
+    ctx.textAlign = 'center';
+    ctx.font = '500 22px DM Sans, sans-serif';
+    ctx.fillText(moodLabel(note.mood), w / 2, ny + nh + 50);
+  }
+  ctx.restore();
+
+  // Footer URL
+  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.font = '24px DM Sans, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('pinit — one human, one note, one day', w / 2, h - 80);
+  ctx.fillStyle = 'rgba(201,168,76,0.6)';
+  ctx.font = '22px DM Sans, sans-serif';
+  var urlHost = window.location.host || 'pinit';
+  ctx.fillText(urlHost, w / 2, h - 45);
+}
+
 function escHtml(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1365,6 +1717,9 @@ function escHtml(s) {
 // Close overlay on backdrop click
 document.getElementById('overlay').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
+});
+document.getElementById('share-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeShare();
 });
 
 var COUNTRY_COORDS = {
