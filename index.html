@@ -672,6 +672,178 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .map-topbar { max-width: calc(100% - 56px); }
 }
 
+/* Archive overlay */
+.archive-overlay {
+  position: fixed; inset: 0;
+  background: #f5f0e8;
+  z-index: 500;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.archive-overlay.open { display: flex; }
+.archive-topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 1rem 1.25rem;
+  background: rgba(44,37,32,0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.archive-topbar-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.archive-nav-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.75);
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.archive-nav-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+.archive-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.archive-date-input {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.08);
+  color: #f5f0e8;
+  cursor: pointer;
+}
+.archive-close {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.8);
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.archive-close:hover { background: rgba(255,255,255,0.18); color: #fff; }
+.archive-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.75rem 1.5rem 2.5rem;
+}
+.archive-header { max-width: 720px; margin: 0 auto 1.75rem; text-align: center; }
+.archive-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(22px, 4vw, 32px);
+  font-style: italic;
+  font-weight: 400;
+  color: #2c2520;
+  line-height: 1.35;
+  margin-bottom: 0.5rem;
+}
+.archive-meta {
+  font-size: 13px;
+  color: rgba(44,37,32,0.55);
+  margin-bottom: 0.35rem;
+}
+.archive-day-mood {
+  font-size: 12px;
+  color: #b8894a;
+  font-style: italic;
+  margin-top: 4px;
+}
+.archive-limit-note {
+  font-size: 11px;
+  color: rgba(44,37,32,0.45);
+  margin-top: 6px;
+}
+.archive-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  columns: 3;
+  column-gap: 16px;
+}
+.archive-card {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  padding: 16px 14px 12px;
+  border-radius: 4px;
+  position: relative;
+  box-shadow: 3px 5px 16px rgba(44,37,32,0.15), 0 1px 0 rgba(255,255,255,0.25) inset;
+  transform: rotate(-0.5deg);
+}
+.archive-card:nth-child(even) { transform: rotate(0.6deg); }
+.archive-card::before {
+  content: '';
+  position: absolute;
+  top: -7px; left: 50%;
+  transform: translateX(-50%);
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ececec, #999);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+}
+.archive-card-text {
+  font-family: 'Caveat', cursive;
+  font-size: 17px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  word-break: break-word;
+}
+.archive-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  padding-top: 8px;
+}
+.archive-card-alias { font-weight: 600; }
+.archive-card-mood {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.06);
+}
+.archive-card-country { margin-left: auto; opacity: 0.65; }
+.archive-empty {
+  text-align: center;
+  padding: 4rem 1.5rem;
+  max-width: 400px;
+  margin: 2rem auto;
+}
+.archive-empty h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: #2c2520;
+  margin-bottom: 0.5rem;
+}
+.archive-empty p { font-size: 14px; color: rgba(44,37,32,0.55); line-height: 1.65; }
+.archive-loading {
+  text-align: center;
+  padding: 4rem;
+  color: rgba(44,37,32,0.45);
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .archive-grid { columns: 2; }
+}
+@media (max-width: 560px) {
+  .archive-grid { columns: 1; max-width: 340px; }
+  .archive-body { padding: 1.25rem 1rem 2rem; }
+  .archive-topbar { padding: 0.75rem 1rem; }
+}
+
 /* Solar system canvas */
 
 /* Make landing text readable over space bg */
@@ -720,6 +892,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     <div class="hero-actions">
       <button class="post-btn" id="open-modal-btn" onclick="openModal()">Leave your Trace</button>
       <button class="stat-btn" onclick="openMap()">Explore today&rsquo;s wall ↗</button>
+      <button class="stat-btn" onclick="openArchive()">Browse the archive</button>
     </div>
 
     <div class="section-block">
@@ -770,6 +943,30 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     </div>
   </div>
   <div id="map"></div>
+</div>
+
+<!-- Archive Overlay -->
+<div class="archive-overlay" id="archive-overlay">
+  <div class="archive-topbar">
+    <div class="archive-topbar-left">
+      <button type="button" class="archive-nav-btn" id="archive-prev-btn" onclick="changeArchiveDate(-1)">&#8592;</button>
+      <input type="date" class="archive-date-input" id="archive-date-input" onchange="onArchiveDatePick(this.value)" />
+      <button type="button" class="archive-nav-btn" id="archive-next-btn" onclick="changeArchiveDate(1)">&#8594;</button>
+      <button type="button" class="archive-nav-btn" onclick="openMapFromArchive()">View on map</button>
+    </div>
+    <button type="button" class="archive-close" onclick="closeArchive()" aria-label="Close archive">&times;</button>
+  </div>
+  <div class="archive-body">
+    <div class="archive-header">
+      <h2 class="archive-heading" id="archive-heading">On this day, the world said&hellip;</h2>
+      <p class="archive-meta" id="archive-meta"></p>
+      <p class="archive-day-mood" id="archive-day-mood" style="display:none;"></p>
+      <p class="archive-limit-note" id="archive-limit-note" style="display:none;"></p>
+    </div>
+    <div id="archive-content">
+      <div class="archive-loading">Loading archive&hellip;</div>
+    </div>
+  </div>
 </div>
 
 <!-- Post Modal -->
@@ -1294,8 +1491,8 @@ var mapNotes = [];
 
 var currentMapDate = new Date().toISOString().slice(0, 10);
 
-function openMap() {
-  currentMapDate = new Date().toISOString().slice(0, 10);
+function openMap(optDate) {
+  currentMapDate = optDate || new Date().toISOString().slice(0, 10);
   document.getElementById('map-overlay').classList.add('open');
   window.location.hash = 'wall';
   // Show find my note if user has posted any time
@@ -1684,6 +1881,165 @@ function isLightBg(hex) {
 // Auto-open map if URL has #wall
 if (window.location.hash === '#wall') {
   document.addEventListener('DOMContentLoaded', () => openMap());
+}
+if (window.location.hash === '#archive') {
+  document.addEventListener('DOMContentLoaded', () => openArchive());
+}
+
+// ---- ARCHIVE ----
+var currentArchiveDate = new Date().toISOString().slice(0, 10);
+var ARCHIVE_NOTE_LIMIT = 500;
+
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function formatArchiveHeading(iso) {
+  if (iso === todayISO()) return 'Today, the world is saying&hellip;';
+  var d = new Date(iso + 'T12:00:00Z');
+  var formatted = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  return 'On ' + formatted + ', the world said&hellip;';
+}
+
+function formatArchiveMeta(count, countries) {
+  if (!count) return 'No traces were left on this day.';
+  var c = countries || 0;
+  return count.toLocaleString() + ' trace' + (count === 1 ? '' : 's') +
+    ' from ' + c + ' countr' + (c === 1 ? 'y' : 'ies');
+}
+
+function getArchiveDayMood(notes) {
+  var counts = {};
+  var total = 0;
+  notes.forEach(function(n) {
+    if (!n.mood) return;
+    counts[n.mood] = (counts[n.mood] || 0) + 1;
+    total++;
+  });
+  if (!total) return null;
+  var top = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; })[0];
+  return { label: moodLabel(top), total: total };
+}
+
+function updateArchiveNavButtons() {
+  var today = todayISO();
+  var nextBtn = document.getElementById('archive-next-btn');
+  var dateInput = document.getElementById('archive-date-input');
+  if (dateInput) {
+    dateInput.max = today;
+    dateInput.value = currentArchiveDate;
+  }
+  if (nextBtn) {
+    var atToday = currentArchiveDate >= today;
+    nextBtn.disabled = atToday;
+    nextBtn.style.opacity = atToday ? '0.35' : '1';
+  }
+}
+
+function openArchive(date) {
+  currentArchiveDate = date || todayISO();
+  document.getElementById('archive-overlay').classList.add('open');
+  window.location.hash = 'archive';
+  updateArchiveNavButtons();
+  loadArchiveNotes();
+}
+
+function closeArchive() {
+  document.getElementById('archive-overlay').classList.remove('open');
+  if (window.location.hash === '#archive') {
+    history.pushState('', document.title, window.location.pathname);
+  }
+}
+
+function changeArchiveDate(dir) {
+  var d = new Date(currentArchiveDate + 'T12:00:00Z');
+  d.setUTCDate(d.getUTCDate() + dir);
+  var next = d.toISOString().slice(0, 10);
+  if (next > todayISO()) return;
+  currentArchiveDate = next;
+  updateArchiveNavButtons();
+  loadArchiveNotes();
+}
+
+function onArchiveDatePick(value) {
+  if (!value || value > todayISO()) return;
+  currentArchiveDate = value;
+  updateArchiveNavButtons();
+  loadArchiveNotes();
+}
+
+function openMapFromArchive() {
+  var date = currentArchiveDate;
+  closeArchive();
+  openMap(date);
+}
+
+function renderArchiveCard(note) {
+  var color = note.color || '#fef08a';
+  var light = isLightBg(color);
+  var tc = light ? '#1a1612' : '#f5f0e8';
+  var mc = light ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.5)';
+  var bc = light ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)';
+  var moodHtml = note.mood
+    ? '<span class="archive-card-mood" style="color:' + mc + ';">' + escHtml(moodLabel(note.mood)) + '</span>'
+    : '';
+  return '<article class="archive-card" style="background:' + escHtml(color) + ';">' +
+    '<div class="archive-card-text" style="color:' + tc + ';">' + escHtml(note.content) + '</div>' +
+    '<div class="archive-card-footer" style="border-top-color:' + bc + ';">' +
+      '<span class="archive-card-alias" style="color:' + mc + ';">' + escHtml(note.alias || 'Anonymous') + '</span>' +
+      moodHtml +
+      '<span class="archive-card-country" style="color:' + mc + ';">' + escHtml(note.country || 'Unknown') + '</span>' +
+    '</div></article>';
+}
+
+async function loadArchiveNotes() {
+  var content = document.getElementById('archive-content');
+  var heading = document.getElementById('archive-heading');
+  var meta = document.getElementById('archive-meta');
+  var dayMood = document.getElementById('archive-day-mood');
+  var limitNote = document.getElementById('archive-limit-note');
+
+  content.innerHTML = '<div class="archive-loading">Loading archive&hellip;</div>';
+  heading.innerHTML = formatArchiveHeading(currentArchiveDate);
+  meta.textContent = '';
+  if (dayMood) { dayMood.style.display = 'none'; dayMood.textContent = ''; }
+  if (limitNote) limitNote.style.display = 'none';
+
+  var res = await sb.from('notes')
+    .select('content,alias,country,color,mood', { count: 'exact' })
+    .eq('note_date', currentArchiveDate)
+    .order('created_at', { ascending: false })
+    .limit(ARCHIVE_NOTE_LIMIT);
+
+  if (res.error) {
+    content.innerHTML = '<div class="archive-empty"><h3>Could not load archive</h3><p>Please try again in a moment.</p></div>';
+    return;
+  }
+
+  var notes = res.data || [];
+  var totalCount = res.count != null ? res.count : notes.length;
+  var countries = new Set(notes.map(function(n) { return n.country; }).filter(Boolean)).size;
+
+  meta.textContent = formatArchiveMeta(totalCount, countries);
+
+  var moodSummary = getArchiveDayMood(notes);
+  if (dayMood && moodSummary) {
+    dayMood.textContent = 'That day felt mostly ' + moodSummary.label.toLowerCase() +
+      ' (' + moodSummary.total + ' shared mood' + (moodSummary.total === 1 ? '' : 's') + ')';
+    dayMood.style.display = 'block';
+  }
+
+  if (limitNote && totalCount > ARCHIVE_NOTE_LIMIT) {
+    limitNote.textContent = 'Showing the most recent ' + ARCHIVE_NOTE_LIMIT + ' of ' + totalCount.toLocaleString() + ' traces.';
+    limitNote.style.display = 'block';
+  }
+
+  if (!notes.length) {
+    content.innerHTML = '<div class="archive-empty"><h3>A quiet day</h3><p>No one left a trace on this date. Try another day, or explore today&rsquo;s live wall.</p></div>';
+    return;
+  }
+
+  content.innerHTML = '<div class="archive-grid">' + notes.map(renderArchiveCard).join('') + '</div>';
 }
 
 init();
