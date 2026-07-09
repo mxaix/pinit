@@ -31,10 +31,11 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   position: fixed; top: 0; left: 0;
   width: 44%; max-width: 520px; min-width: 300px;
   height: 100vh;
-  display: flex; align-items: center; justify-content: flex-start;
+  display: flex; align-items: flex-start; justify-content: flex-start;
   padding: 2rem 2.25rem;
   z-index: 2; text-align: left;
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
@@ -975,7 +976,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     </div>
 
     <div class="world-feeling" id="world-feeling" style="display:none;">
-      <div class="section-label">Today&rsquo;s world feeling</div>
+      <div class="section-label" id="world-feeling-label">Today&rsquo;s world feeling</div>
       <div class="world-feeling-main" id="world-feeling-main"></div>
       <div class="world-feeling-sub" id="world-feeling-sub"></div>
       <div class="world-feeling-bars" id="world-feeling-bars"></div>
@@ -1173,6 +1174,7 @@ var hasPosted = false;
 var lastPostedNote = null;
 
 async function init() {
+  scrollPanelToTop();
   renderColorPicker();
   renderMoodPicker();
   await detectLocation();
@@ -1181,6 +1183,20 @@ async function init() {
   loadWorldFeeling();
   setTimeout(loadStickyNotes, 1000);
 }
+
+function scrollPanelToTop() {
+  var panel = document.querySelector('.header');
+  if (panel) panel.scrollTop = 0;
+  try {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  } catch (e) {
+    window.scrollTo(0, 0);
+  }
+}
+
+window.addEventListener('pageshow', function() {
+  scrollPanelToTop();
+});
 
 async function detectLocation() {
   // Reuse stored hash if already detected AND country is known
@@ -1315,9 +1331,27 @@ async function loadWorldFeeling() {
   var sorted = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
   var top = sorted[0];
 
+  var labelEl = document.getElementById('world-feeling-label');
+  if (labelEl) {
+    if (total >= 5) {
+      labelEl.textContent = "Today\u2019s world feeling";
+    } else if (total === 1) {
+      labelEl.textContent = "Among today\u2019s first traces";
+    } else {
+      labelEl.textContent = 'Early mood today';
+    }
+  }
+
   document.getElementById('world-feeling-main').textContent = moodLabel(top);
-  document.getElementById('world-feeling-sub').textContent =
-    total === 1 ? 'Based on 1 shared mood today' : 'Based on ' + total.toLocaleString() + ' shared moods today';
+  if (total === 1) {
+    document.getElementById('world-feeling-sub').textContent = '1 shared mood today';
+  } else if (total >= 5) {
+    document.getElementById('world-feeling-sub').textContent =
+      'Based on ' + total.toLocaleString() + ' shared moods today';
+  } else {
+    document.getElementById('world-feeling-sub').textContent =
+      total.toLocaleString() + ' shared moods today';
+  }
 
   var bars = document.getElementById('world-feeling-bars');
   bars.innerHTML = sorted.slice(0, 4).map(function(id) {
@@ -1391,6 +1425,7 @@ function openModal() {
 function closeModal() {
   document.getElementById('overlay').classList.remove('open');
   clearAlerts();
+  scrollPanelToTop();
 }
 
 function clearAlerts() {
@@ -1518,6 +1553,7 @@ function showShareOverlay() {
 function closeShare() {
   var overlay = document.getElementById('share-overlay');
   if (overlay) overlay.classList.remove('open');
+  scrollPanelToTop();
 }
 
 function closeShareAndMap() {
@@ -1869,6 +1905,7 @@ function changeMapDate(dir) {
 function closeMap() {
   document.getElementById('map-overlay').classList.remove('open');
   history.pushState('', document.title, window.location.pathname);
+  scrollPanelToTop();
 }
 
 function findMyNote() {
@@ -2304,6 +2341,7 @@ function closeArchive() {
   if (window.location.hash === '#archive') {
     history.pushState('', document.title, window.location.pathname);
   }
+  scrollPanelToTop();
 }
 
 function changeArchiveDate(dir) {
