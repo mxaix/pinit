@@ -58,6 +58,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .note-date { color: var(--muted); font-size: 11px; white-space: nowrap; }
 .delete-btn { background: none; border: 1px solid rgba(224,85,85,0.3); color: var(--red); font-size: 12px; padding: 4px 10px; border-radius: 2px; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
 .delete-btn:hover { background: rgba(224,85,85,0.1); }
+.hide-btn { background: none; border: 1px solid rgba(184,137,74,0.35); color: var(--gold); font-size: 12px; padding: 4px 10px; border-radius: 2px; cursor: pointer; white-space: nowrap; margin-right: 4px; }
+.hide-btn:hover { background: rgba(184,137,74,0.1); }
+.restore-btn { background: none; border: 1px solid rgba(58,125,90,0.35); color: var(--green); font-size: 12px; padding: 4px 10px; border-radius: 2px; cursor: pointer; white-space: nowrap; margin-right: 4px; }
+.restore-btn:hover { background: rgba(58,125,90,0.1); }
+.status-live { font-size: 11px; color: var(--green); }
+.status-hidden { font-size: 11px; color: var(--gold); }
+.report-count { font-size: 12px; color: var(--red); font-weight: 500; }
+.report-count.zero { color: var(--muted); font-weight: 400; }
+.row-hidden td { opacity: 0.72; }
+.action-cell { white-space: nowrap; }
 
 /* Confirm modal */
 .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: none; align-items: center; justify-content: center; }
@@ -111,6 +121,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <select class="filter-select" id="country-filter" onchange="applyFilters()">
       <option value="">All countries</option>
     </select>
+    <select class="filter-select" id="status-filter" onchange="applyFilters()">
+      <option value="">All notes</option>
+      <option value="live">Live only</option>
+      <option value="hidden">Hidden only</option>
+      <option value="reported">Reported only</option>
+    </select>
     <button class="btn" onclick="loadNotes()" style="padding:7px 14px;font-size:12px;">Refresh</button>
     <div class="toolbar-right" id="toolbar-right"></div>
   </div>
@@ -124,6 +140,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
           <th>Name</th>
           <th>Mood</th>
           <th>Country</th>
+          <th>Status</th>
+          <th>Reports</th>
           <th>Date</th>
           <th></th>
         </tr>
@@ -153,6 +171,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 const ADMIN_TOKEN_KEY = 'pinit_admin_token';
 
 let allNotes = [];
+let reportCounts = {};
 let pendingDeleteId = null;
 let adminToken = null;
 
@@ -225,6 +244,7 @@ async function loadNotes() {
     }
 
     const notes = Array.isArray(data.notes) ? data.notes : [];
+    reportCounts = data.reportCounts && typeof data.reportCounts === 'object' ? data.reportCounts : {};
     allNotes = notes;
     document.getElementById('table-status').innerHTML = '';
     document.getElementById('total-notes').textContent = notes.length.toLocaleString();
@@ -242,8 +262,12 @@ async function loadNotes() {
 function applyFilters() {
   const search = document.getElementById('search-input').value.toLowerCase();
   const country = document.getElementById('country-filter').value;
+  const status = document.getElementById('status-filter').value;
   let filtered = allNotes;
   if (country) filtered = filtered.filter(n => n.country === country);
+  if (status === 'live') filtered = filtered.filter(n => !n.hidden);
+  if (status === 'hidden') filtered = filtered.filter(n => n.hidden);
+  if (status === 'reported') filtered = filtered.filter(n => (reportCounts[n.id] || 0) > 0);
   if (search) filtered = filtered.filter(n =>
     (n.content || '').toLowerCase().includes(search) ||
     (n.alias || '').toLowerCase().includes(search) ||
@@ -258,17 +282,28 @@ function renderTable(notes) {
   const tbody = document.getElementById('notes-tbody');
   if (!notes.length) { tbody.innerHTML = ''; document.getElementById('table-status').innerHTML = '<div class="empty">No notes match your search.</div>'; return; }
   document.getElementById('table-status').innerHTML = '';
-  tbody.innerHTML = notes.map(n => `
-    <tr>
+  tbody.innerHTML = notes.map(n => {
+    const reports = reportCounts[n.id] || 0;
+    const hidden = !!n.hidden;
+    return `
+    <tr class="${hidden ? 'row-hidden' : ''}">
       <td><span class="note-color-dot" style="background:${escHtml(n.color||'#fef08a')};"></span></td>
       <td><div class="note-content">${escHtml(n.content)}</div></td>
       <td><div class="note-alias">${escHtml(n.alias)}</div></td>
       <td><div class="note-mood">${n.mood ? escHtml(n.mood.charAt(0).toUpperCase() + n.mood.slice(1)) : '—'}</div></td>
       <td><div class="note-country">${escHtml(n.country||'Unknown')}</div></td>
+      <td><div class="${hidden ? 'status-hidden' : 'status-live'}">${hidden ? 'Hidden' : 'Live'}</div></td>
+      <td><div class="report-count${reports ? '' : ' zero'}">${reports || '—'}</div></td>
       <td><div class="note-date">${formatDate(n.created_at)}</div></td>
-      <td><button class="delete-btn" onclick="openConfirm('${n.id}', \`${escJs(n.content)}\`)">Delete</button></td>
+      <td class="action-cell">
+        ${hidden
+          ? `<button class="restore-btn" onclick="setNoteHidden('${n.id}', false)">Restore</button>`
+          : `<button class="hide-btn" onclick="setNoteHidden('${n.id}', true)">Hide</button>`}
+        <button class="delete-btn" onclick="openConfirm('${n.id}', \`${escJs(n.content)}\`)">Delete</button>
+      </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function openConfirm(id, content) {
@@ -280,6 +315,31 @@ function openConfirm(id, content) {
 function closeConfirm() {
   pendingDeleteId = null;
   document.getElementById('confirm-overlay').classList.remove('open');
+}
+
+async function setNoteHidden(id, hidden) {
+  try {
+    const r = await fetch('/api/admin/notes', {
+      method: 'PATCH',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ id, hidden })
+    });
+    if (!r.ok) {
+      if (r.status === 401) { logout(); return; }
+      showToast(hidden ? 'Hide failed.' : 'Restore failed.');
+      return;
+    }
+    const note = allNotes.find(n => n.id === id);
+    if (note) {
+      note.hidden = hidden;
+      note.hidden_at = hidden ? new Date().toISOString() : null;
+    }
+    showToast(hidden ? 'Note hidden from public view.' : 'Note restored to public view.');
+    applyFilters();
+  } catch (e) {
+    showToast(hidden ? 'Hide failed.' : 'Restore failed.');
+  }
 }
 
 async function confirmDelete() {

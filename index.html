@@ -772,6 +772,22 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   padding-top: 7px;
   gap: 8px;
 }
+.report-note-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  text-decoration: underline;
+  cursor: pointer;
+  opacity: 0.65;
+  text-align: left;
+}
+.report-note-btn:hover { opacity: 1; }
+.report-note-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .leaflet-popup-content-wrapper { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
 .leaflet-popup-content { margin: 0 !important; }
 .leaflet-popup-tip-container { display: none; }
@@ -1860,6 +1876,42 @@ function renderShareCanvas() {
   ctx.fillText(urlHost, w / 2, h - 45);
 }
 
+function buildNotePopupHtml(note) {
+  var tc = isLightColor(note.color) ? '#1a1612' : '#f5f0e8';
+  var mc = isLightColor(note.color) ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
+  var moodPart = note.mood ? '<span style="color:' + mc + ';opacity:0.85;">' + escHtml(moodLabel(note.mood)) + '</span>' : '';
+  var reportBtn = note.id
+    ? '<button type="button" class="report-note-btn" style="color:' + mc + ';" onclick="reportNote(\'' + note.id + '\', this)">Report this note</button>'
+    : '';
+  return '<div class="note-popup"><div class="note-popup-inner" style="background:' + (note.color || '#fef08a') + ';">' +
+    '<div class="note-popup-text" style="color:' + tc + ';">' + escHtml(note.content) + '</div>' +
+    '<div class="note-popup-footer"><span style="color:' + mc + ';">' + escHtml(note.alias) + '</span>' + moodPart +
+    '<span style="color:' + mc + ';">' + escHtml(note.country || 'Unknown') + '</span></div>' +
+    reportBtn + '</div></div>';
+}
+
+async function reportNote(noteId, btn) {
+  if (!noteId) return;
+  if (btn) btn.disabled = true;
+  try {
+    var r = await fetch('/api/report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ noteId: noteId })
+    });
+    var data = await r.json().catch(function() { return {}; });
+    if (r.ok && data.ok) {
+      showToast('Thank you. This note was reported for review.');
+    } else {
+      showToast(data.error || 'Could not submit report. Try again.');
+      if (btn) btn.disabled = false;
+    }
+  } catch (e) {
+    showToast('Could not submit report. Try again.');
+    if (btn) btn.disabled = false;
+  }
+}
+
 function escHtml(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -2214,10 +2266,7 @@ async function loadMapNotes() {
       // Click always shows note popup regardless of zoom
       marker.on('click', function() {
         var n = this._note;
-        var tc = isLightColor(n.color) ? '#1a1612' : '#f5f0e8';
-        var mc = isLightColor(n.color) ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
-        var moodPart = n.mood ? '<span style="color:' + mc + ';opacity:0.85;">' + escHtml(moodLabel(n.mood)) + '</span>' : '';
-        var html = `<div class="note-popup"><div class="note-popup-inner" style="background:${n.color||'#fef08a'};"><div class="note-popup-text" style="color:${tc};">${escHtml(n.content)}</div><div class="note-popup-footer"><span style="color:${mc};">${escHtml(n.alias)}</span>${moodPart}<span style="color:${mc};">${escHtml(n.country||'Unknown')}</span></div></div></div>`;
+        var html = buildNotePopupHtml(n);
         L.popup({ maxWidth: 240, className: 'note-popup-wrap', closeButton: true })
           .setLatLng(this.getLatLng())
           .setContent(html)
@@ -2271,18 +2320,9 @@ function buildNoteCardHtml(note, textColor, mutedColor) {
 }
 
 function showNotePopup(note, marker) {
-  var textColor = isLightColor(note.color) ? '#1a1612' : '#f5f0e8';
-  var mutedColor = isLightColor(note.color) ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
-  var popup = L.popup({ maxWidth: 240, className: 'note-popup-wrap', closeButton: true, autoClose: true })
+  L.popup({ maxWidth: 240, className: 'note-popup-wrap', closeButton: true, autoClose: true })
     .setLatLng(marker.getLatLng())
-    .setContent(`
-      <div style="background:${note.color||'#fef08a'};border-radius:3px;padding:12px 12px 8px;min-width:180px;">
-        <div style="font-family:'Caveat',cursive;font-size:17px;line-height:1.5;color:${textColor};margin-bottom:8px;">${escHtml(note.content)}</div>
-        <div style="display:flex;justify-content:space-between;font-family:'DM Sans',sans-serif;font-size:11px;color:${mutedColor};border-top:1px solid ${textColor==='#1a1612'?'rgba(0,0,0,0.1)':'rgba(255,255,255,0.15)'};padding-top:6px;">
-          <span>${escHtml(note.alias)}</span>
-          <span>${escHtml(note.country||'Unknown')}</span>
-        </div>
-      </div>`)
+    .setContent(buildNotePopupHtml(note))
     .openOn(map);
 }
 
