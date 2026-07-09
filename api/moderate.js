@@ -3,10 +3,13 @@ export const config = { api: { bodyParser: true } };
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { text } = req.body;
-  if (!text) return res.status(400).json({ error: 'No text provided' });
+  try {
+    const { text } = req.body || {};
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'No text provided' });
+    }
 
-  const t = text.toLowerCase();
+    const t = text.toLowerCase();
 
   // Exact phrase blocklist
   const blocked = [
@@ -49,5 +52,9 @@ export default async function handler(req, res) {
     return res.status(200).json({ safe: false, reason: 'Too short — say something meaningful' });
   }
 
-  return res.status(200).json({ safe: true });
+    return res.status(200).json({ safe: true });
+  } catch (err) {
+    console.error('Moderation error:', err);
+    return res.status(500).json({ safe: false, reason: 'Moderation check failed. Please try again.' });
+  }
 }

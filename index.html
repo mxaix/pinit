@@ -474,9 +474,16 @@ async function moderate(text) {
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({text})
     });
-    return await r.json();
+    if (!r.ok) {
+      return { safe: false, reason: 'Moderation check failed. Please try again.' };
+    }
+    var data = await r.json();
+    if (typeof data.safe !== 'boolean') {
+      return { safe: false, reason: 'Moderation check failed. Please try again.' };
+    }
+    return data;
   } catch(e) {
-    return {safe:true};
+    return { safe: false, reason: 'Could not verify your note. Check your connection and try again.' };
   }
 }
 

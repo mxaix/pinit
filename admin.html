@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pinit — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #faf7f2; --surface: #f2ede4; --card: #ffffff;
@@ -149,51 +148,93 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 <div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL = 'https://udzxqigctbrpandqmzev.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkenhxaWdjdGJycGFuZHFtemV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NjQ1NzMsImV4cCI6MjA4OTE0MDU3M30.ZR5L_90-ztWz_D-gVbSIwQFEnrqa3XDBZCmRjzB5EEs';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Change this password to something only you know
-const ADMIN_PASSWORD = 'pinit@admin2024';
+const ADMIN_TOKEN_KEY = 'pinit_admin_token';
 
 let allNotes = [];
 let pendingDeleteId = null;
+let adminToken = null;
 
-function login() {
+function getAuthHeaders() {
+  return adminToken ? { Authorization: 'Bearer ' + adminToken } : {};
+}
+
+async function login() {
   const pw = document.getElementById('password-input').value;
-  if (pw === ADMIN_PASSWORD) {
+  const loginError = document.getElementById('login-error');
+  loginError.classList.remove('show');
+
+  try {
+    const r = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await r.json().catch(() => ({}));
+
+    if (!r.ok || !data.ok || !data.token) {
+      loginError.classList.add('show');
+      document.getElementById('password-input').value = '';
+      document.getElementById('password-input').focus();
+      return;
+    }
+
+    adminToken = data.token;
+    sessionStorage.setItem(ADMIN_TOKEN_KEY, adminToken);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('admin-panel').style.display = 'block';
-    sessionStorage.setItem('pinit_admin', 'true');
     loadNotes();
-  } else {
-    document.getElementById('login-error').classList.add('show');
-    document.getElementById('password-input').value = '';
-    document.getElementById('password-input').focus();
+  } catch (e) {
+    loginError.textContent = 'Login failed. Please try again.';
+    loginError.classList.add('show');
   }
 }
 
-function logout() {
-  sessionStorage.removeItem('pinit_admin');
+async function logout() {
+  adminToken = null;
+  sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+  try {
+    await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin' });
+  } catch (e) {}
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('admin-panel').style.display = 'none';
   document.getElementById('password-input').value = '';
+  document.getElementById('login-error').textContent = 'Incorrect password';
 }
 
 async function loadNotes() {
   document.getElementById('table-status').innerHTML = '<div class="loading">Loading notes...</div>';
   document.getElementById('notes-tbody').innerHTML = '';
-  const { data, error } = await sb.from('notes').select('*').order('created_at', { ascending: false });
-  if (error || !data) { document.getElementById('table-status').innerHTML = '<div class="empty">Failed to load notes.</div>'; return; }
-  allNotes = data;
-  document.getElementById('table-status').innerHTML = '';
-  document.getElementById('total-notes').textContent = data.length.toLocaleString();
-  const countries = [...new Set(data.map(n => n.country).filter(Boolean))].sort();
-  document.getElementById('total-countries').textContent = countries.length;
-  const sel = document.getElementById('country-filter');
-  sel.innerHTML = '<option value="">All countries</option>';
-  countries.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
-  applyFilters();
+
+  try {
+    const r = await fetch('/api/admin/notes', {
+      headers: getAuthHeaders(),
+      credentials: 'same-origin'
+    });
+    const data = await r.json().catch(() => ({}));
+
+    if (!r.ok) {
+      if (r.status === 401) {
+        logout();
+        return;
+      }
+      document.getElementById('table-status').innerHTML = '<div class="empty">Failed to load notes.</div>';
+      return;
+    }
+
+    const notes = Array.isArray(data.notes) ? data.notes : [];
+    allNotes = notes;
+    document.getElementById('table-status').innerHTML = '';
+    document.getElementById('total-notes').textContent = notes.length.toLocaleString();
+    const countries = [...new Set(notes.map(n => n.country).filter(Boolean))].sort();
+    document.getElementById('total-countries').textContent = countries.length;
+    const sel = document.getElementById('country-filter');
+    sel.innerHTML = '<option value="">All countries</option>';
+    countries.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+    applyFilters();
+  } catch (e) {
+    document.getElementById('table-status').innerHTML = '<div class="empty">Failed to load notes.</div>';
+  }
 }
 
 function applyFilters() {
@@ -239,13 +280,33 @@ function closeConfirm() {
 
 async function confirmDelete() {
   if (!pendingDeleteId) return;
-  const { error } = await sb.from('notes').delete().eq('id', pendingDeleteId);
-  if (error) { showToast('Delete failed. Try again.'); closeConfirm(); return; }
-  allNotes = allNotes.filter(n => n.id !== pendingDeleteId);
-  closeConfirm();
-  showToast('Note deleted.');
-  applyFilters();
-  document.getElementById('total-notes').textContent = allNotes.length.toLocaleString();
+
+  try {
+    const r = await fetch('/api/admin/notes?id=' + encodeURIComponent(pendingDeleteId), {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      credentials: 'same-origin'
+    });
+
+    if (!r.ok) {
+      if (r.status === 401) {
+        logout();
+        return;
+      }
+      showToast('Delete failed. Try again.');
+      closeConfirm();
+      return;
+    }
+
+    allNotes = allNotes.filter(n => n.id !== pendingDeleteId);
+    closeConfirm();
+    showToast('Note deleted.');
+    applyFilters();
+    document.getElementById('total-notes').textContent = allNotes.length.toLocaleString();
+  } catch (e) {
+    showToast('Delete failed. Try again.');
+    closeConfirm();
+  }
 }
 
 function formatDate(iso) {
@@ -271,12 +332,30 @@ function escJs(s) {
   return String(s).replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
 }
 
-// Auto-login if session exists
-if (sessionStorage.getItem('pinit_admin') === 'true') {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('admin-panel').style.display = 'block';
-  loadNotes();
+async function restoreSession() {
+  const stored = sessionStorage.getItem(ADMIN_TOKEN_KEY);
+  if (!stored) return;
+
+  adminToken = stored;
+  try {
+    const r = await fetch('/api/admin/check', {
+      headers: getAuthHeaders(),
+      credentials: 'same-origin'
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.authenticated) {
+      logout();
+      return;
+    }
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+    loadNotes();
+  } catch (e) {
+    logout();
+  }
 }
+
+restoreSession();
 
 // Close confirm on backdrop click
 document.getElementById('confirm-overlay').addEventListener('click', function(e) {
