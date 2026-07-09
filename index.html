@@ -440,6 +440,70 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 .color-opt:hover { transform: scale(1.15); }
 .color-opt.selected { border-color: var(--text); transform: scale(1.2); box-shadow: 0 0 0 2px var(--text); }
 
+/* Mood picker */
+.mood-field label { margin-bottom: 8px; }
+.mood-field .optional-hint { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); }
+.mood-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.25rem; }
+.mood-opt {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mood-opt:hover { border-color: var(--gold); color: var(--text); }
+.mood-opt.selected {
+  background: rgba(201,168,76,0.15);
+  border-color: var(--gold);
+  color: var(--gold-light);
+  box-shadow: 0 0 0 1px rgba(201,168,76,0.25);
+}
+
+/* Today's world feeling */
+.world-feeling {
+  margin-bottom: 1.5rem;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.world-feeling-main {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: #f5c49a;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.world-feeling-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.38);
+  margin-bottom: 10px;
+}
+.world-feeling-bars { display: flex; flex-direction: column; gap: 6px; }
+.world-feeling-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: rgba(220,225,240,0.55);
+}
+.world-feeling-row span:first-child { width: 72px; flex-shrink: 0; }
+.world-feeling-bar {
+  flex: 1; height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px; overflow: hidden;
+}
+.world-feeling-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(201,168,76,0.5), rgba(245,196,154,0.7));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.world-feeling-pct { width: 32px; text-align: right; flex-shrink: 0; font-size: 10px; color: rgba(255,255,255,0.35); }
+
 .modal-alert { border-radius: 2px; padding: 9px 13px; font-size: 13px; margin-bottom: 1rem; line-height: 1.6; display: none; }
 .modal-alert.show { display: block; }
 .alert-error { background: #fdf0f0; border: 1px solid #f0b8b8; color: #b94040; border-radius: 8px; }
@@ -634,6 +698,13 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
       <strong id="stat-notes">0</strong> traces left today
     </div>
 
+    <div class="world-feeling" id="world-feeling" style="display:none;">
+      <div class="section-label">Today&rsquo;s world feeling</div>
+      <div class="world-feeling-main" id="world-feeling-main"></div>
+      <div class="world-feeling-sub" id="world-feeling-sub"></div>
+      <div class="world-feeling-bars" id="world-feeling-bars"></div>
+    </div>
+
     <div class="sticky-wrap" id="sticky-wrap">
       <div class="sticky-note" id="sticky-note">
         <div class="sticky-pin"></div>
@@ -725,6 +796,11 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     <div class="field" style="margin-bottom:0.5rem;"><label>Pick your note color</label></div>
     <div class="colors" id="color-picker"></div>
 
+    <div class="field mood-field" style="margin-bottom:0.5rem;">
+      <label>How are you feeling? <span class="optional-hint">(optional)</span></label>
+    </div>
+    <div class="mood-picker" id="mood-picker"></div>
+
     <div class="modal-alert alert-error" id="modal-alert-error"></div>
     <div class="modal-alert alert-warn" id="modal-alert-warn"></div>
 
@@ -756,15 +832,31 @@ var COLORS = [
   '#c94040', // crimson
 ];
 
+var MOODS = [
+  { id: 'hopeful', label: 'Hopeful' },
+  { id: 'tired', label: 'Tired' },
+  { id: 'lonely', label: 'Lonely' },
+  { id: 'grateful', label: 'Grateful' },
+  { id: 'angry', label: 'Angry' },
+  { id: 'peaceful', label: 'Peaceful' },
+  { id: 'lost', label: 'Lost' }
+];
+
+var MOOD_LABELS = {};
+MOODS.forEach(function(m) { MOOD_LABELS[m.id] = m.label; });
+
 var userIPHash = null, userCountry = 'Unknown', userCountryCode = '';
 var selectedColor = COLORS[0];
+var selectedMood = null;
 var hasPosted = false;
 
 async function init() {
   renderColorPicker();
+  renderMoodPicker();
   await detectLocation();
   await checkIfPosted();
   loadNotes();
+  loadWorldFeeling();
   setTimeout(loadStickyNotes, 1000);
 }
 
@@ -850,6 +942,72 @@ function selectColor(color, el) {
   document.querySelectorAll('.color-opt').forEach(e=>e.classList.remove('selected'));
   el.classList.add('selected');
   document.getElementById('note-preview').style.background = color;
+}
+
+function renderMoodPicker() {
+  var picker = document.getElementById('mood-picker');
+  if (!picker) return;
+  picker.innerHTML = MOODS.map(function(m) {
+    return '<button type="button" class="mood-opt' + (selectedMood === m.id ? ' selected' : '') + '" data-mood="' + m.id + '" onclick="selectMood(\'' + m.id + '\', this)">' + m.label + '</button>';
+  }).join('');
+}
+
+function selectMood(id, el) {
+  if (selectedMood === id) {
+    selectedMood = null;
+    el.classList.remove('selected');
+    return;
+  }
+  selectedMood = id;
+  document.querySelectorAll('.mood-opt').forEach(function(e) { e.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+
+function moodLabel(id) {
+  return MOOD_LABELS[id] || (id ? id.charAt(0).toUpperCase() + id.slice(1) : '');
+}
+
+async function loadWorldFeeling() {
+  var wrap = document.getElementById('world-feeling');
+  if (!wrap) return;
+
+  var today = new Date().toISOString().slice(0, 10);
+  var res = await sb.from('notes').select('mood').eq('note_date', today).not('mood', 'is', null);
+  if (res.error || !res.data || !res.data.length) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  var counts = {};
+  var total = 0;
+  res.data.forEach(function(row) {
+    if (!row.mood) return;
+    counts[row.mood] = (counts[row.mood] || 0) + 1;
+    total++;
+  });
+  if (!total) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  var sorted = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
+  var top = sorted[0];
+
+  document.getElementById('world-feeling-main').textContent = moodLabel(top);
+  document.getElementById('world-feeling-sub').textContent =
+    total === 1 ? 'Based on 1 shared mood today' : 'Based on ' + total.toLocaleString() + ' shared moods today';
+
+  var bars = document.getElementById('world-feeling-bars');
+  bars.innerHTML = sorted.slice(0, 4).map(function(id) {
+    var pct = Math.round((counts[id] / total) * 100);
+    return '<div class="world-feeling-row">' +
+      '<span>' + escHtml(moodLabel(id)) + '</span>' +
+      '<div class="world-feeling-bar"><div class="world-feeling-bar-fill" style="width:' + pct + '%"></div></div>' +
+      '<span class="world-feeling-pct">' + pct + '%</span>' +
+    '</div>';
+  }).join('');
+
+  wrap.style.display = 'block';
 }
 
 function onNoteInput(el) {
@@ -952,14 +1110,20 @@ async function submitNote() {
 
   // Insert note
   var today = new Date().toISOString().slice(0, 10);
-  var {error: noteErr} = await sb.from('notes').insert({
-    content, alias, color: selectedColor,
+  var notePayload = {
+    content: content, alias: alias, color: selectedColor,
     country: userCountry, country_code: userCountryCode,
     ip_hash: userIPHash, note_date: today
-  });
+  };
+  if (selectedMood) notePayload.mood = selectedMood;
+
+  var {error: noteErr} = await sb.from('notes').insert(notePayload);
 
   if (noteErr) {
-    showAlert('error', 'Something went wrong. Try again.');
+    var errMsg = noteErr.message && noteErr.message.indexOf('mood') >= 0
+      ? 'Mood feature is not ready yet. Try again without selecting a mood, or contact the site owner.'
+      : 'Something went wrong. Try again.';
+    showAlert('error', errMsg);
     btn.disabled=false; btn.innerHTML='Pin my note to the wall &rarr;';
     return;
   }
@@ -979,6 +1143,7 @@ async function submitNote() {
   showToast('Your note is pinned. Open the wall to find it.');
   loadStickyNotes();
   loadNotes();
+  loadWorldFeeling();
   setTimeout(() => { openMap(); setTimeout(() => findMyNote(), 1500); }, 600);
 }
 
@@ -1219,6 +1384,7 @@ function subscribeToNotes() {
       }
       // Refresh live note panel
           loadStickyNotes();
+          loadWorldFeeling();
       // Update landing stat too
       var statEl = document.getElementById('stat-notes');
       if (statEl) {
@@ -1346,7 +1512,8 @@ async function loadMapNotes() {
         var n = this._note;
         var tc = isLightColor(n.color) ? '#1a1612' : '#f5f0e8';
         var mc = isLightColor(n.color) ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.4)';
-        var html = `<div class="note-popup"><div class="note-popup-inner" style="background:${n.color||'#fef08a'};"><div class="note-popup-text" style="color:${tc};">${escHtml(n.content)}</div><div class="note-popup-footer"><span style="color:${mc};">${escHtml(n.alias)}</span><span style="color:${mc};">${escHtml(n.country||'Unknown')}</span></div></div></div>`;
+        var moodPart = n.mood ? '<span style="color:' + mc + ';opacity:0.85;">' + escHtml(moodLabel(n.mood)) + '</span>' : '';
+        var html = `<div class="note-popup"><div class="note-popup-inner" style="background:${n.color||'#fef08a'};"><div class="note-popup-text" style="color:${tc};">${escHtml(n.content)}</div><div class="note-popup-footer"><span style="color:${mc};">${escHtml(n.alias)}</span>${moodPart}<span style="color:${mc};">${escHtml(n.country||'Unknown')}</span></div></div></div>`;
         L.popup({ maxWidth: 240, className: 'note-popup-wrap', closeButton: true })
           .setLatLng(this.getLatLng())
           .setContent(html)
