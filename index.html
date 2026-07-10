@@ -48,34 +48,26 @@ html { scroll-behavior: smooth; }
 html, body { height: 100%; }
 body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-/* Header / landing panel */
+/* Header / landing panel — one-screen desktop */
 .header {
   position: fixed; top: 0; left: 0;
   width: 44%; max-width: 520px; min-width: 300px;
   height: 100vh;
-  display: flex; align-items: flex-start; justify-content: flex-start;
-  padding: 1.5rem 2rem;
+  height: 100dvh;
+  display: flex; align-items: center; justify-content: flex-start;
+  padding: 1rem 1.65rem;
   z-index: 2; text-align: left;
-  overflow-y: auto;
+  overflow: hidden;
   overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
 }
-.header:hover {
-  scrollbar-color: rgba(255,255,255,0.14) transparent;
+.header-inner {
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  overflow: hidden;
 }
-.header::-webkit-scrollbar { width: 4px; }
-.header::-webkit-scrollbar-track { background: transparent; }
-.header::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 4px;
-}
-.header:hover::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.14);
-}
-.header-inner { width: 100%; max-width: 420px; }
 
-.brand { margin-bottom: 1rem; }
+.brand { margin-bottom: 0.65rem; }
 .brand-name {
   font-family: 'DM Sans', sans-serif;
   font-size: 13px; font-weight: 500;
@@ -84,38 +76,47 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   text-transform: uppercase;
 }
 .brand-tagline {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255,255,255,0.35);
-  margin-top: 6px;
+  margin-top: 4px;
   letter-spacing: 0.04em;
 }
 
 .hero-quote {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(20px, 2.5vw, 28px);
+  font-size: clamp(17px, 2.2vw, 24px);
   font-style: italic; font-weight: 400;
   color: #f5c49a;
-  line-height: 1.4;
-  margin: 0 0 0.65rem;
+  line-height: 1.32;
+  margin: 0 0 0.45rem;
 }
 .hero-quote em { font-style: italic; color: #ffddb8; }
 
 .hero-body {
-  font-size: 13px;
-  color: rgba(220,225,240,0.72);
-  line-height: 1.65;
-  margin: 0 0 0.85rem;
+  font-size: 12px;
+  color: rgba(220,225,240,0.68);
+  line-height: 1.55;
+  margin: 0 0 0.6rem;
   font-weight: 300;
+}
+
+.landing-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+  min-height: 0;
 }
 
 .hero-stat {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 11px;
   color: rgba(255,255,255,0.45);
-  margin-bottom: 0.75rem;
-  padding: 6px 12px;
+  margin-bottom: 0;
+  padding: 5px 10px;
   border-radius: 20px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
@@ -124,26 +125,26 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   color: var(--gold-light);
   font-weight: 500;
   font-family: 'Playfair Display', serif;
-  font-size: 15px;
+  font-size: 13px;
 }
 
 .divider {
-  width: 48px; height: 1px;
+  width: 36px; height: 1px;
   background: linear-gradient(90deg, rgba(201,168,76,0.6), transparent);
-  margin: 0 0 0.65rem 0;
+  margin: 0 0 0.45rem 0;
 }
 
 .hero-actions {
   display: flex; flex-direction: column;
-  align-items: flex-start; gap: 8px;
-  margin-bottom: 0.9rem;
+  align-items: flex-start; gap: 6px;
+  margin-bottom: 0.55rem;
 }
 
 .post-btn {
   background: linear-gradient(135deg, #d4824a, #b35e38);
-  color: #fff; font-size: 14px; font-weight: 500;
+  color: #fff; font-size: 13px; font-weight: 500;
   border: 1.5px solid rgba(255,255,255,0.2);
-  padding: 12px 28px; border-radius: 50px;
+  padding: 10px 22px; border-radius: 50px;
   cursor: pointer; transition: all 0.25s;
   white-space: nowrap; letter-spacing: 0.08em;
   box-shadow: 0 4px 24px rgba(196,113,74,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
@@ -156,43 +157,20 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.14);
   color: rgba(220,225,240,0.8);
-  font-size: 12px; font-weight: 500;
-  padding: 10px 24px; border-radius: 50px;
+  font-size: 11px; font-weight: 500;
+  padding: 7px 16px; border-radius: 50px;
   cursor: pointer; transition: all 0.2s;
   white-space: nowrap; letter-spacing: 0.08em;
   text-transform: uppercase; font-family: 'DM Sans', sans-serif;
 }
 .stat-btn:hover { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.3); }
 
-/* How it works */
-.section-block {
-  margin-bottom: 1.75rem;
-  padding-top: 0.25rem;
-}
 .section-label {
   font-size: 10px; font-weight: 500;
   text-transform: uppercase; letter-spacing: 0.16em;
   color: var(--gold);
   margin-bottom: 0.85rem;
 }
-.how-steps { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-.how-step {
-  display: flex; align-items: flex-start; gap: 12px;
-  font-size: 13px; line-height: 1.55;
-  color: rgba(220,225,240,0.68);
-}
-.how-step-num {
-  flex-shrink: 0;
-  width: 22px; height: 22px;
-  border-radius: 50%;
-  background: rgba(201,168,76,0.12);
-  border: 1px solid rgba(201,168,76,0.25);
-  color: var(--gold-light);
-  font-size: 11px; font-weight: 500;
-  display: flex; align-items: center; justify-content: center;
-  margin-top: 1px;
-}
-.how-step strong { color: rgba(245,240,232,0.92); font-weight: 500; }
 
 /* Mobile portrait compact globe */
 .mobile-globe-wrap {
@@ -351,6 +329,10 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 }
 
 @media (min-width: 901px) {
+  html, body {
+    overflow: hidden;
+    height: 100%;
+  }
   .traces-stream-wrap {
     position: fixed;
     right: clamp(1.25rem, 3.5vw, 2.25rem);
@@ -360,6 +342,31 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     margin: 0;
     width: 252px;
   }
+}
+
+@media (min-width: 901px) and (max-height: 800px) {
+  .header { padding: 0.7rem 1.45rem; }
+  .brand { margin-bottom: 0.4rem; }
+  .hero-quote {
+    font-size: clamp(16px, 2vw, 21px);
+    line-height: 1.28;
+    margin-bottom: 0.35rem;
+  }
+  .divider { margin-bottom: 0.35rem; }
+  .hero-body { font-size: 11px; line-height: 1.5; margin-bottom: 0.45rem; }
+  .hero-actions { margin-bottom: 0.4rem; gap: 5px; }
+  .post-btn { padding: 8px 18px; font-size: 12px; }
+  .stat-btn { padding: 6px 14px; font-size: 10px; }
+  .landing-chips { margin-bottom: 0.35rem; gap: 5px; }
+  .hero-stat { padding: 4px 9px; font-size: 10px; }
+  .hero-stat strong { font-size: 12px; }
+  .world-feeling { padding: 4px 9px; }
+  .world-feeling-main { font-size: 12px; }
+  .world-feeling-sub { font-size: 9px; }
+  .site-footer { margin-top: 0.25rem; padding-top: 0.4rem; }
+  .traces-stream-viewport { height: 300px; }
+  .passing-track { gap: 26px; padding-bottom: 26px; }
+  .trace-item-quote { font-size: 15px; line-height: 1.48; }
 }
 
 @media (max-width: 900px) {
@@ -417,32 +424,25 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     margin-bottom: 0.65rem;
   }
 
-  .hero-stat {
+  .landing-chips {
     order: 7;
-    margin-bottom: 0.55rem;
+    margin-bottom: 0.5rem;
+    gap: 5px;
+  }
+
+  .hero-stat {
+    margin-bottom: 0;
     padding: 4px 10px;
     font-size: 11px;
   }
   .hero-stat strong { font-size: 13px; }
 
   .world-feeling {
-    order: 8;
-    margin-bottom: 0.6rem;
-    padding: 9px 11px;
+    margin-bottom: 0;
+    padding: 5px 10px;
   }
-  .world-feeling-main { font-size: 17px; }
-  .world-feeling-sub { margin-bottom: 5px; font-size: 10px; }
-  .world-feeling-bars { gap: 4px; }
-  .world-feeling-bar { height: 3px; }
-  .world-feeling-row { font-size: 10px; }
-  .world-feeling-row span:first-child { width: 64px; }
-
-  .world-feeling-single {
-    padding: 7px 10px;
-    margin-bottom: 0.45rem;
-  }
-  .world-feeling-single .world-feeling-main { font-size: 16px; }
-  .world-feeling-single .world-feeling-sub { font-size: 10px; }
+  .world-feeling-main { font-size: 13px; }
+  .world-feeling-sub { margin-bottom: 0; font-size: 10px; }
 
   .mobile-globe-wrap {
     display: block;
@@ -462,34 +462,24 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     gap: 7px;
   }
   .traces-stream-wrap {
-    order: 9;
+    order: 8;
     max-width: 100%;
     width: 100%;
-    margin: 0 0 0.65rem 0;
-    padding: 0.65rem 0.75rem 0.75rem;
+    margin: 0 0 0.5rem 0;
+    padding: 0.55rem 0.65rem 0.65rem;
   }
-  .traces-stream-viewport { height: 155px; }
-  .traces-stream-label { margin-bottom: 0.45rem; font-size: 9px; }
-  .passing-track { gap: 24px; padding-bottom: 24px; }
-  .traces-stream-static { gap: 18px; }
-  .trace-item-quote { font-size: 13px; line-height: 1.5; margin-bottom: 0.35rem; }
+  .traces-stream-viewport { height: 140px; }
+  .traces-stream-label { margin-bottom: 0.35rem; font-size: 9px; }
+  .passing-track { gap: 20px; padding-bottom: 20px; }
+  .traces-stream-static { gap: 16px; }
+  .trace-item-quote { font-size: 13px; line-height: 1.45; margin-bottom: 0.3rem; }
   .trace-item-alias { font-size: 10px; }
 
-  .section-block {
-    order: 10;
-    margin-bottom: 1.1rem;
-  }
-  .section-block:last-child { margin-bottom: 0; }
-  .section-label { margin-bottom: 0.6rem; }
-  .how-steps { gap: 7px; }
-  .how-step { font-size: 12px; gap: 9px; }
-  .how-step-num { width: 20px; height: 20px; font-size: 10px; }
-
   .site-footer {
-    order: 11;
-    margin-top: 0.85rem;
-    padding-top: 0.85rem;
-    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+    order: 9;
+    margin-top: 0.55rem;
+    padding-top: 0.65rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
   .site-footer-links { gap: 4px 12px; margin-bottom: 8px; }
   .site-footer-links button { font-size: 11px; }
@@ -667,28 +657,40 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   box-shadow: 0 0 0 1px rgba(201,168,76,0.25);
 }
 
-/* Today's world feeling */
+/* Today's world feeling — compact chip on landing */
 .world-feeling {
-  margin-bottom: 1rem;
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 0;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
+  max-width: 100%;
 }
+.landing-chips .world-feeling .section-label { display: none; }
+.landing-chips .world-feeling-bars { display: none !important; }
 .world-feeling-main {
   font-family: 'Playfair Display', serif;
-  font-size: 22px;
+  font-size: 13px;
   font-style: italic;
   color: #f5c49a;
-  line-height: 1.3;
-  margin-bottom: 4px;
+  line-height: 1.2;
+  margin-bottom: 0;
 }
 .world-feeling-sub {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255,255,255,0.38);
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
-.world-feeling-bars { display: flex; flex-direction: column; gap: 6px; }
+.world-feeling-sub::before {
+  content: '\00b7';
+  margin-right: 5px;
+  opacity: 0.5;
+}
+.world-feeling-bars { display: none; }
 .world-feeling-row {
   display: flex; align-items: center; gap: 8px;
   font-size: 11px; color: rgba(220,225,240,0.55);
@@ -707,21 +709,9 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 }
 .world-feeling-pct { width: 32px; text-align: right; flex-shrink: 0; font-size: 10px; color: rgba(255,255,255,0.35); }
 
-/* Compact mood card when only one mood exists */
-.world-feeling-single {
-  padding: 10px 13px;
-  margin-bottom: 1rem;
-}
-.world-feeling-single .world-feeling-main {
-  font-size: 19px;
-  margin-bottom: 2px;
-}
-.world-feeling-single .world-feeling-sub {
-  margin-bottom: 0;
-}
-.world-feeling-single .world-feeling-bars {
-  display: none;
-}
+.world-feeling-single .world-feeling-sub::before { content: none; margin: 0; }
+.world-feeling-single .world-feeling-main { font-size: 13px; }
+.world-feeling-single .world-feeling-sub { font-size: 10px; }
 
 .modal-alert { border-radius: 2px; padding: 9px 13px; font-size: 13px; margin-bottom: 1rem; line-height: 1.6; display: none; }
 .modal-alert.show { display: block; }
@@ -1185,23 +1175,23 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 
 /* Site footer */
 .site-footer {
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  margin-top: 0.4rem;
+  padding-top: 0.55rem;
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 .site-footer-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
-  margin-bottom: 10px;
+  gap: 4px 10px;
+  margin-bottom: 6px;
 }
 .site-footer-links button {
   background: none;
   border: none;
   padding: 0;
   font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 500;
   color: rgba(245,196,154,0.75);
   cursor: pointer;
@@ -1211,7 +1201,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 }
 .site-footer-links button:hover { color: #f5c49a; }
 .site-footer-copy {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255,255,255,0.28);
   line-height: 1.5;
 }
@@ -1222,8 +1212,8 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 .site-footer-copy a:hover { color: var(--gold-light); }
 
 .install-prompt {
-  margin-top: 0.85rem;
-  padding: 10px 12px;
+  margin-top: 0.55rem;
+  padding: 8px 10px;
   border-radius: 8px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(201,168,76,0.18);
@@ -1361,7 +1351,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 
     <div class="hero-quote">&ldquo;Billions of people have walked this earth. Most left no trace. <em>This is your trace.</em>&rdquo;</div>
     <div class="divider"></div>
-    <div class="hero-body">Each day, the world writes itself anew. One voice per person. One pin on the map. At midnight UTC the wall closes — but every day is kept, remembered, and woven into the archive of what humanity was feeling.</div>
+    <div class="hero-body">One note per person, per day. Your voice joins the world wall — remembered each night in the archive.</div>
 
     <div class="hero-actions">
       <button class="post-btn" id="open-modal-btn" onclick="openModal()">Leave your Trace</button>
@@ -1369,15 +1359,17 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
       <button class="stat-btn" onclick="openArchive()">Browse the archive</button>
     </div>
 
-    <div class="hero-stat" id="hero-stat" style="display:none;">
-      <strong id="stat-notes">0</strong> traces on the wall today
-    </div>
+    <div class="landing-chips">
+      <div class="hero-stat" id="hero-stat" style="display:none;">
+        <strong id="stat-notes">0</strong> traces on the wall today
+      </div>
 
-    <div class="world-feeling" id="world-feeling" style="display:none;">
-      <div class="section-label" id="world-feeling-label">Today&rsquo;s world feeling</div>
-      <div class="world-feeling-main" id="world-feeling-main"></div>
-      <div class="world-feeling-sub" id="world-feeling-sub"></div>
-      <div class="world-feeling-bars" id="world-feeling-bars"></div>
+      <div class="world-feeling" id="world-feeling" style="display:none;">
+        <div class="section-label" id="world-feeling-label">Today&rsquo;s world feeling</div>
+        <div class="world-feeling-main" id="world-feeling-main"></div>
+        <div class="world-feeling-sub" id="world-feeling-sub"></div>
+        <div class="world-feeling-bars" id="world-feeling-bars"></div>
+      </div>
     </div>
 
     <aside class="traces-stream-wrap" id="traces-stream-wrap" aria-label="Passing traces from today&rsquo;s wall">
@@ -1394,20 +1386,10 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
       </div>
     </aside>
 
-    <div class="section-block">
-      <div class="section-label">How it works</div>
-      <ol class="how-steps">
-        <li class="how-step"><span class="how-step-num">1</span><span><strong>Write one short note</strong> — a thought, wish, truth, or question.</span></li>
-        <li class="how-step"><span class="how-step-num">2</span><span><strong>Your country is detected</strong> — never your exact location.</span></li>
-        <li class="how-step"><span class="how-step-num">3</span><span><strong>It joins today&rsquo;s world wall</strong> — alongside voices from every corner of the earth.</span></li>
-        <li class="how-step"><span class="how-step-num">4</span><span><strong>At midnight UTC, today closes</strong> — the live wall resets for a new day.</span></li>
-        <li class="how-step"><span class="how-step-num">5</span><span><strong>The day is saved in the archive</strong> — a record of what the world said.</span></li>
-      </ol>
-    </div>
-
     <footer class="site-footer">
       <nav class="site-footer-links" aria-label="Site information">
         <button type="button" onclick="openInfoModal('about')">About</button>
+        <button type="button" onclick="openInfoModal('howitworks')">How it works</button>
         <button type="button" onclick="openInfoModal('privacy')">Privacy</button>
         <button type="button" onclick="openInfoModal('rules')">Rules</button>
       </nav>
@@ -1423,7 +1405,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   </div>
 </div>
 
-<!-- Info modal (About / Privacy / Rules) -->
+<!-- Info modal (About / How it works / Privacy / Rules) -->
 <div class="info-overlay" id="info-overlay">
   <div class="info-modal">
     <button class="modal-close" onclick="closeInfoModal()" aria-label="Close">&times;</button>
@@ -1569,6 +1551,16 @@ var INFO_CONTENT = {
       '<li>Notes that break these rules may be blocked or removed</li>' +
       '<li>Anyone can report a note; admins may hide or restore content</li></ul>' +
       '<p>If your note is blocked, try rewriting it without harmful language.</p>'
+  },
+  howitworks: {
+    title: 'How it works',
+    html: '<ul>' +
+      '<li><strong>Write one short note</strong> — a thought, wish, truth, or question</li>' +
+      '<li><strong>Your country is detected</strong> — never your exact location</li>' +
+      '<li><strong>It joins today&rsquo;s world wall</strong> — alongside voices from around the earth</li>' +
+      '<li><strong>At midnight UTC, today closes</strong> — the live wall resets for a new day</li>' +
+      '<li><strong>The day is saved in the archive</strong> — a record of what the world said</li>' +
+      '</ul>'
   }
 };
 
@@ -1832,7 +1824,7 @@ async function loadWorldFeeling() {
     '</div>';
   }).join('');
 
-  wrap.style.display = 'block';
+  wrap.style.display = 'inline-flex';
 }
 
 function onNoteInput(el) {
