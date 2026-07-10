@@ -216,10 +216,10 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   position: relative;
   height: 360px;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
 }
-.traces-stream-viewport.is-paused .trace-item-animated {
+.traces-stream-viewport.is-paused .passing-track.is-rolling {
   animation-play-state: paused;
 }
 .traces-stream-empty {
@@ -253,14 +253,31 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 .traces-stream-static {
   display: none;
   flex-direction: column;
-  gap: 18px;
+  gap: 22px;
+  padding: 0.25rem 0;
 }
 .traces-stream-viewport.reduced-motion .traces-stream-static { display: flex; }
-.traces-stream-viewport.reduced-motion .trace-item-animated { display: none !important; }
+.traces-stream-viewport.reduced-motion .passing-track { display: none !important; }
+.passing-track {
+  display: none;
+  flex-direction: column;
+  gap: 32px;
+  padding: 0.5rem 0 32px;
+  will-change: transform;
+}
+.passing-track.is-rolling {
+  animation: credits-rise var(--credits-duration, 48s) linear infinite;
+}
+@keyframes credits-rise {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, -50%, 0); }
+}
 .trace-item {
   width: 100%;
   max-width: 248px;
-  padding: 0.35rem 0.15rem;
+  flex-shrink: 0;
+  padding: 0.25rem 0.15rem;
+  margin: 0;
   background: none;
   border: none;
   box-shadow: none;
@@ -280,31 +297,15 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   text-decoration-color: rgba(245,196,154,0.32);
   text-underline-offset: 3px;
 }
-.trace-item-animated {
-  position: absolute;
-  left: 0;
-  right: 0;
-  will-change: transform, opacity;
-  animation: trace-rise 24s linear forwards;
-}
-@keyframes trace-rise {
-  0% { transform: translateY(105%); opacity: 0; }
-  7% { opacity: 1; }
-  90% { opacity: 0.88; }
-  100% { transform: translateY(-115%); opacity: 0; }
-}
 .trace-item-quote {
   font-family: 'Playfair Display', serif;
   font-style: italic;
   font-size: 16px;
   line-height: 1.55;
   color: rgba(245,240,232,0.78);
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.45rem;
   word-break: break-word;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 .trace-item-alias {
   font-family: 'DM Sans', sans-serif;
@@ -338,7 +339,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trace-item-animated { animation: none !important; display: none !important; }
+  .passing-track.is-rolling { animation: none !important; }
   .traces-stream-viewport { -webkit-mask-image: none; mask-image: none; }
 }
 
@@ -431,7 +432,9 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   }
   .traces-stream-viewport { height: 155px; }
   .traces-stream-label { margin-bottom: 0.45rem; font-size: 9px; }
-  .trace-item-quote { font-size: 14px; line-height: 1.5; -webkit-line-clamp: 3; margin-bottom: 0.3rem; }
+  .passing-track { gap: 24px; padding-bottom: 24px; }
+  .traces-stream-static { gap: 18px; }
+  .trace-item-quote { font-size: 13px; line-height: 1.5; margin-bottom: 0.35rem; }
   .trace-item-alias { font-size: 10px; }
 
   .section-block {
@@ -1291,6 +1294,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
             <p>No traces yet today. Yours could be the first voice on the wall.</p>
           </div>
         </div>
+        <div class="passing-track" id="passing-track"></div>
         <div class="traces-stream-static" id="traces-stream-static"></div>
       </div>
     </aside>
@@ -1528,12 +1532,11 @@ var hasPosted = false;
 var lastPostedNote = null;
 
 var TRACES_FETCH_LIMIT = 24;
+var TRACE_PREVIEW_MAX = 140;
 var tracesNotes = [];
-var traceNoteIndex = 0;
-var traceSpawnTimer = null;
-var traceStaticTimer = null;
 var landingNoteCount = 0;
 var landingPollTimer = null;
+var trackRebuildTimer = null;
 var notesLiveChannel = null;
 var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -2346,12 +2349,7 @@ function handleLiveNoteInsert(note) {
       created_at: note.created_at
     });
     if (tracesNotes.length > TRACES_FETCH_LIMIT) tracesNotes.pop();
-    updateTracesEmptyState();
-    if (prefersReducedMotion) {
-      renderStaticTraces();
-    } else {
-      spawnTraceCard(note);
-    }
+    schedulePassingTrackRebuild();
     loadNotes();
     loadWorldFeeling();
   }
@@ -2394,13 +2392,12 @@ async function fetchTodayTracesNotes() {
 
 async function refreshTracesFromServer() {
   tracesNotes = await fetchTodayTracesNotes();
-  traceNoteIndex = 0;
-  updateTracesEmptyState();
-  if (prefersReducedMotion) {
-    renderStaticTraces();
-  } else {
-    restartTracesStream();
-  }
+  schedulePassingTrackRebuild();
+}
+
+function schedulePassingTrackRebuild() {
+  if (trackRebuildTimer) clearTimeout(trackRebuildTimer);
+  trackRebuildTimer = setTimeout(rebuildPassingTrack, 120);
 }
 
 async function pollLandingUpdates() {
@@ -2449,6 +2446,12 @@ function updateTracesEmptyState() {
   empty.classList.toggle('show', !tracesNotes.length);
 }
 
+function truncateTracePreview(text) {
+  var t = (text || '').trim().replace(/\s+/g, ' ');
+  if (t.length <= TRACE_PREVIEW_MAX) return t;
+  return t.slice(0, TRACE_PREVIEW_MAX - 1).trim() + '\u2026';
+}
+
 function bindTraceItemClick(el, note) {
   el.setAttribute('role', 'button');
   el.setAttribute('tabindex', '0');
@@ -2465,14 +2468,14 @@ function bindTraceItemClick(el, note) {
   });
 }
 
-function buildTraceItemElement(note, animated) {
+function buildTraceItemElement(note) {
   var block = document.createElement('div');
-  block.className = 'trace-item' + (animated ? ' trace-item-animated' : '');
+  block.className = 'trace-item';
 
   var quote = document.createElement('div');
   quote.className = 'trace-item-quote';
-  var content = (note.content || '').trim();
-  quote.textContent = content ? '\u201c' + content + '\u201d' : '\u201c\u201d';
+  var preview = truncateTracePreview(note.content);
+  quote.textContent = preview ? '\u201c' + preview + '\u201d' : '\u201c\u201d';
 
   var alias = document.createElement('div');
   alias.className = 'trace-item-alias';
@@ -2482,13 +2485,66 @@ function buildTraceItemElement(note, animated) {
   block.appendChild(alias);
   bindTraceItemClick(block, note);
 
-  if (animated) {
-    block.addEventListener('animationend', function() {
-      if (block.parentNode) block.parentNode.removeChild(block);
-    });
+  return block;
+}
+
+function rebuildPassingTrack() {
+  var track = document.getElementById('passing-track');
+  var staticWrap = document.getElementById('traces-stream-static');
+  var viewport = document.getElementById('traces-stream-viewport');
+  if (!track || !viewport) return;
+
+  track.innerHTML = '';
+  track.classList.remove('is-rolling');
+  track.style.removeProperty('--credits-duration');
+  track.style.display = 'none';
+  if (staticWrap) staticWrap.innerHTML = '';
+
+  updateTracesEmptyState();
+
+  if (!tracesNotes.length) return;
+
+  if (prefersReducedMotion) {
+    renderStaticTraces();
+    return;
   }
 
-  return block;
+  var base = tracesNotes.slice();
+  var loopItems = base.concat(base);
+
+  loopItems.forEach(function(note) {
+    track.appendChild(buildTraceItemElement(note));
+  });
+
+  track.style.display = 'flex';
+
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      var halfHeight = track.scrollHeight / 2;
+      if (!halfHeight) return;
+      var pxPerSec = 20;
+      var duration = Math.max(28, Math.min(120, halfHeight / pxPerSec));
+      track.style.setProperty('--credits-duration', duration + 's');
+      track.classList.add('is-rolling');
+    });
+  });
+}
+
+function renderStaticTraces() {
+  var wrap = document.getElementById('traces-stream-static');
+  var track = document.getElementById('passing-track');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  if (track) {
+    track.innerHTML = '';
+    track.classList.remove('is-rolling');
+    track.style.display = 'none';
+  }
+  if (!tracesNotes.length) return;
+
+  tracesNotes.slice(0, 3).forEach(function(note) {
+    wrap.appendChild(buildTraceItemElement(note));
+  });
 }
 
 function findMapMarkerForNote(note) {
@@ -2554,67 +2610,6 @@ async function focusTraceOnMap(note) {
     showNotePopup(marker._note, marker);
     pulseMapMarker(marker);
   }, flyDelay);
-}
-
-function getNextTraceNote() {
-  if (!tracesNotes.length) return null;
-  var note = tracesNotes[traceNoteIndex % tracesNotes.length];
-  traceNoteIndex++;
-  return note;
-}
-
-function spawnTraceCard(note) {
-  if (prefersReducedMotion || !tracesNotes.length) return;
-  var viewport = document.getElementById('traces-stream-viewport');
-  if (!viewport) return;
-
-  var data = note || getNextTraceNote();
-  if (!data) return;
-
-  var active = viewport.querySelectorAll('.trace-item-animated').length;
-  if (active >= 4) return;
-
-  viewport.appendChild(buildTraceItemElement(data, true));
-}
-
-function restartTracesStream() {
-  if (traceSpawnTimer) clearInterval(traceSpawnTimer);
-  var viewport = document.getElementById('traces-stream-viewport');
-  if (viewport) {
-    viewport.querySelectorAll('.trace-item-animated').forEach(function(el) { el.remove(); });
-  }
-  if (!tracesNotes.length || prefersReducedMotion) return;
-
-  spawnTraceCard();
-  traceSpawnTimer = setInterval(function() { spawnTraceCard(); }, 7000);
-}
-
-function renderStaticTraces() {
-  if (traceStaticTimer) clearInterval(traceStaticTimer);
-  var wrap = document.getElementById('traces-stream-static');
-  if (!wrap) return;
-  wrap.innerHTML = '';
-
-  if (!tracesNotes.length) return;
-
-  tracesNotes.slice(0, 2).forEach(function(note) {
-    wrap.appendChild(buildTraceItemElement(note, false));
-  });
-
-  if (tracesNotes.length <= 1) return;
-
-  var staticIndex = 0;
-  traceStaticTimer = setInterval(function() {
-    if (!tracesNotes.length) return;
-    staticIndex = (staticIndex + 1) % tracesNotes.length;
-    var note = tracesNotes[staticIndex];
-    wrap.innerHTML = '';
-    wrap.appendChild(buildTraceItemElement(note, false));
-    if (tracesNotes.length > 1) {
-      var next = tracesNotes[(staticIndex + 1) % tracesNotes.length];
-      wrap.appendChild(buildTraceItemElement(next, false));
-    }
-  }, 14000);
 }
 
 function initMap() {
