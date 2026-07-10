@@ -1,5 +1,13 @@
 {
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" }
+  ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "pinitworld.vercel.app" }],
+      "destination": "https://www.pinitworld.com/:path*",
+      "permanent": true
+    }
   ]
 }

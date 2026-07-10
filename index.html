@@ -3,7 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Pinit</title>
+<title>Pinit — One human, one note, one day</title>
+<meta name="description" content="Leave one short note on the world wall each day. Country only — never your exact location. Browse today&#39;s map, moods, and the archive of what humanity was feeling.">
+<meta name="theme-color" content="#04060f">
+<link rel="canonical" href="https://www.pinitworld.com/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/favicon.svg">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pinit">
+<meta property="og:title" content="Pinit — One human, one note, one day">
+<meta property="og:description" content="Leave one short note on the world wall each day. Country only — never your exact location. Join the map and archive of what the world is feeling.">
+<meta property="og:url" content="https://www.pinitworld.com/">
+<meta property="og:image" content="https://www.pinitworld.com/og-image.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Pinit — a daily global notes wall">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pinit — One human, one note, one day">
+<meta name="twitter:description" content="Leave one short note on the world wall each day. Country only — never your exact location.">
+<meta name="twitter:image" content="https://www.pinitworld.com/og-image.svg">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
@@ -388,6 +406,18 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .how-step { font-size: 12px; gap: 9px; }
   .how-step-num { width: 20px; height: 20px; font-size: 10px; }
   .privacy-note { padding: 10px 11px; margin-bottom: 0; }
+
+  .site-footer {
+    order: 10;
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+  .site-footer-links { gap: 4px 12px; margin-bottom: 8px; }
+  .site-footer-links button { font-size: 11px; }
+  .site-footer-copy { font-size: 10px; }
+
+  .info-modal { margin: 1rem auto; padding: 1.25rem; }
 
   .post-btn {
     width: 100%;
@@ -1075,6 +1105,104 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .share-modal { padding: 1.25rem; }
 }
 
+/* Site footer */
+.site-footer {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-bottom: 10px;
+}
+.site-footer-links button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(245,196,154,0.75);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.site-footer-links button:hover { color: #f5c49a; }
+.site-footer-copy {
+  font-size: 11px;
+  color: rgba(255,255,255,0.28);
+  line-height: 1.5;
+}
+.site-footer-copy a {
+  color: rgba(201,168,76,0.55);
+  text-decoration: none;
+}
+.site-footer-copy a:hover { color: var(--gold-light); }
+
+/* Info modal (About / Privacy / Rules) */
+.info-overlay {
+  position: fixed; inset: 0;
+  background: rgba(4,6,15,0.88);
+  backdrop-filter: blur(10px);
+  z-index: 250;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+.info-overlay.open { display: flex; }
+.info-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: 2rem auto;
+  padding: 1.75rem 1.5rem;
+  border-radius: 14px;
+  background: rgba(28,25,23,0.96);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+  color: var(--text);
+}
+.info-modal h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: #f5c49a;
+  margin-bottom: 0.75rem;
+  padding-right: 2rem;
+}
+.info-modal-body {
+  font-size: 14px;
+  line-height: 1.75;
+  color: rgba(220,225,240,0.72);
+}
+.info-modal-body p { margin-bottom: 1rem; }
+.info-modal-body ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+}
+.info-modal-body li {
+  padding-left: 18px;
+  position: relative;
+}
+.info-modal-body li::before {
+  content: '';
+  position: absolute; left: 0; top: 9px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(201,168,76,0.55);
+}
+.info-modal .modal-close { color: rgba(255,255,255,0.4); }
+.info-modal .modal-close:hover { color: #f5c49a; }
+
 /* Solar system canvas */
 
 /* Make landing text readable over space bg */
@@ -1148,6 +1276,24 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
         </ul>
       </div>
     </div>
+
+    <footer class="site-footer">
+      <nav class="site-footer-links" aria-label="Site information">
+        <button type="button" onclick="openInfoModal('about')">About</button>
+        <button type="button" onclick="openInfoModal('privacy')">Privacy</button>
+        <button type="button" onclick="openInfoModal('rules')">Rules</button>
+      </nav>
+      <p class="site-footer-copy">&copy; 2026 Pinit &middot; <a href="https://www.pinitworld.com">pinitworld.com</a></p>
+    </footer>
+  </div>
+</div>
+
+<!-- Info modal (About / Privacy / Rules) -->
+<div class="info-overlay" id="info-overlay">
+  <div class="info-modal">
+    <button class="modal-close" onclick="closeInfoModal()" aria-label="Close">&times;</button>
+    <h2 id="info-title">About</h2>
+    <div class="info-modal-body" id="info-body"></div>
   </div>
 </div>
 
@@ -1170,7 +1316,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   <div class="map-empty" id="map-empty">
     <div class="map-empty-inner">
       <h3 id="map-empty-title">The wall is quiet</h3>
-      <p id="map-empty-text">No traces here yet. Be among the first to leave yours today.</p>
+      <p id="map-empty-text">No notes here yet. Leave yours and help fill the map.</p>
     </div>
   </div>
   <div id="map"></div>
@@ -1211,7 +1357,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
       <textarea id="note-input" placeholder="Write anything. A thought, a wish, a truth, a question..." maxlength="700" oninput="onNoteInput(this)"></textarea>
       <div class="note-preview-footer">
         <span class="preview-alias" id="preview-alias">Your name</span>
-        <span class="preview-country" id="preview-country">Detecting...</span>
+        <span class="preview-country" id="preview-country">Detecting country&hellip;</span>
       </div>
     </div>
     <div class="char-hint"><span id="word-count">0</span> / 60 words</div>
@@ -1246,7 +1392,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     <button class="modal-close" onclick="closeShare()" aria-label="Close">&times;</button>
     <h2>Your trace is live</h2>
     <p class="share-lead">Share it with someone — or keep it as your quiet mark on the world.</p>
-    <div class="share-message-box" id="share-message-text">I left my trace today on Pinit.</div>
+    <div class="share-message-box" id="share-message-text">I left my trace today on Pinit — one human, one note, one day.</div>
     <div class="share-preview-wrap">
       <canvas id="share-canvas" width="1080" height="1080"></canvas>
     </div>
@@ -1261,6 +1407,53 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 </div>
 
 <script>
+var SITE_URL = 'https://www.pinitworld.com';
+
+var INFO_CONTENT = {
+  about: {
+    title: 'About Pinit',
+    html: '<p>Pinit is a daily global notes wall. Each person leaves one short note per day — a thought, wish, truth, or question.</p>' +
+      '<p>Your trace joins voices from around the world on an interactive map. At midnight UTC the live wall resets for a new day, but every day is saved in the archive — a record of what humanity was feeling.</p>' +
+      '<ul><li>One note per person per day</li><li>60 words max</li><li>Optional mood and note color</li><li>Browse today&rsquo;s wall or past days in the archive</li></ul>'
+  },
+  privacy: {
+    title: 'Privacy',
+    html: '<p>Your trust matters. Pinit is built to share feeling, not to expose you.</p>' +
+      '<ul><li>We do not show your exact location — <strong>country only</strong></li>' +
+      '<li>You may use an alias; your real name is never required</li>' +
+      '<li>Public notes may remain visible in the archive</li>' +
+      '<li>We use a hashed identifier to limit one post per day — not to track you personally</li>' +
+      '<li>Notes are checked by local moderation (Pinit Shield) before posting</li></ul>'
+  },
+  rules: {
+    title: 'Wall rules',
+    html: '<p>Pinit is a space for honest human feeling. Please keep it safe for everyone.</p>' +
+      '<ul><li>One note per day per person</li>' +
+      '<li>No abuse, threats, hate, sexual content, or spam</li>' +
+      '<li>Emotional honesty is welcome — harm toward others is not</li>' +
+      '<li>Notes that break these rules may be blocked or removed</li>' +
+      '<li>Anyone can report a note; admins may hide or restore content</li></ul>' +
+      '<p>If your note is blocked, try rewriting it without harmful language.</p>'
+  }
+};
+
+function openInfoModal(which) {
+  var data = INFO_CONTENT[which];
+  if (!data) return;
+  document.getElementById('info-title').textContent = data.title;
+  document.getElementById('info-body').innerHTML = data.html;
+  document.getElementById('info-overlay').classList.add('open');
+}
+
+function closeInfoModal() {
+  document.getElementById('info-overlay').classList.remove('open');
+  scrollPanelToTop();
+}
+
+document.getElementById('info-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeInfoModal();
+});
+
 var SUPABASE_URL = 'https://udzxqigctbrpandqmzev.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkenhxaWdjdGJycGFuZHFtemV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NjQ1NzMsImV4cCI6MjA4OTE0MDU3M30.ZR5L_90-ztWz_D-gVbSIwQFEnrqa3XDBZCmRjzB5EEs';
 var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1361,7 +1554,7 @@ async function detectLocation() {
       userIPHash = stored;
     }
     localStorage.setItem('pinit_country', 'Unknown');
-    document.getElementById('preview-country').textContent = 'Unknown';
+    document.getElementById('preview-country').textContent = 'Country unknown';
   }
 }
 
@@ -1591,7 +1784,7 @@ async function submitNote() {
   // Moderate
   var mod = await moderate(content + ' ' + alias);
   if (!mod.safe) {
-    showAlert('error', 'Not accepted: ' + mod.reason + '. Please revise your note.');
+    showAlert('error', mod.reason || 'This note could not be posted. Please revise and try again.');
     btn.disabled=false; btn.innerHTML='Pin my note to the wall &rarr;';
     return;
   }
@@ -1658,11 +1851,11 @@ function showToast(msg) {
 
 // ---- SHARE ----
 function getShareUrl() {
-  return window.location.origin + window.location.pathname;
+  return SITE_URL;
 }
 
 function getShareText() {
-  return 'I left my trace today on Pinit.';
+  return 'I left my trace today on Pinit — one human, one note, one day.';
 }
 
 function getFullShareMessage() {
@@ -1872,8 +2065,7 @@ function renderShareCanvas() {
   ctx.fillText('pinit — one human, one note, one day', w / 2, h - 80);
   ctx.fillStyle = 'rgba(201,168,76,0.6)';
   ctx.font = '22px DM Sans, sans-serif';
-  var urlHost = window.location.host || 'pinit';
-  ctx.fillText(urlHost, w / 2, h - 45);
+  ctx.fillText('www.pinitworld.com', w / 2, h - 45);
 }
 
 function buildNotePopupHtml(note) {
@@ -2210,8 +2402,8 @@ async function loadMapNotes() {
       if (mapEmptyTitle) mapEmptyTitle.textContent = currentMapDate === today ? 'The wall is quiet' : 'A quiet day';
       if (mapEmptyText) {
         mapEmptyText.textContent = currentMapDate === today
-          ? 'No traces yet today. Be among the first to leave yours.'
-          : 'No notes were left on this day.';
+          ? 'No notes here yet. Leave yours and help fill the map.'
+          : 'This day was quiet — no notes were left on the wall.';
       }
     } else {
       mapEmpty.classList.remove('show');
@@ -2352,7 +2544,7 @@ function showEmptySticky() {
 
   el.style.background = '#f5e6a8';
   if (label) label.textContent = 'The wall awaits';
-  txt.textContent = 'No traces yet today. Be the first voice the world hears.';
+  txt.textContent = 'No traces yet today. Yours could be the first voice on the wall.';
   txt.classList.add('empty-state');
   if (ali) ali.textContent = '';
   if (cnt) cnt.textContent = '';
@@ -2560,7 +2752,7 @@ async function loadArchiveNotes() {
     .limit(ARCHIVE_NOTE_LIMIT);
 
   if (res.error) {
-    content.innerHTML = '<div class="archive-empty"><h3>Could not load archive</h3><p>Please try again in a moment.</p></div>';
+    content.innerHTML = '<div class="archive-empty"><h3>Could not load archive</h3><p>We couldn&rsquo;t reach the archive right now. Check your connection and try again.</p></div>';
     return;
   }
 
@@ -2583,7 +2775,7 @@ async function loadArchiveNotes() {
   }
 
   if (!notes.length) {
-    content.innerHTML = '<div class="archive-empty"><h3>A quiet day</h3><p>No one left a trace on this date. Try another day, or explore today&rsquo;s live wall.</p></div>';
+    content.innerHTML = '<div class="archive-empty"><h3>A quiet day</h3><p>No one left a note on this date. Try another day, or explore today&rsquo;s live wall.</p></div>';
     return;
   }
 
