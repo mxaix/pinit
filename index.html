@@ -1469,7 +1469,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
       <div class="live-day" id="live-day">
         <span class="live-day-tag">TODAY</span>
         <span class="live-day-date" id="live-day-date"></span>
-        <span class="live-day-voices" id="live-day-voices">The first voice is still waiting</span>
+        <span class="live-day-voices" id="live-day-voices">The first voice is still waiting.</span>
       </div>
 
       <div class="world-feeling" id="world-feeling" style="display:none;">
@@ -1985,9 +1985,9 @@ function formatLiveLocalDate() {
 }
 
 function voiceCountHtml(count) {
-  if (count === 0) return 'The first voice is still waiting';
-  if (count === 1) return '<strong>1</strong> voice';
-  return '<strong>' + count.toLocaleString() + '</strong> voices';
+  if (count === 0) return 'The first voice is still waiting.';
+  if (count === 1) return '<strong>1</strong> voice today';
+  return '<strong>' + count.toLocaleString() + '</strong> voices today';
 }
 
 function updateLiveDayDisplay(count) {
