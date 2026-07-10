@@ -219,7 +219,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
   mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
 }
-.traces-stream-viewport.is-paused .trace-card {
+.traces-stream-viewport.is-paused .trace-item-animated {
   animation-play-state: paused;
 }
 .traces-stream-empty {
@@ -253,26 +253,34 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 .traces-stream-static {
   display: none;
   flex-direction: column;
-  gap: 10px;
+  gap: 18px;
 }
 .traces-stream-viewport.reduced-motion .traces-stream-static { display: flex; }
-.traces-stream-viewport.reduced-motion .trace-card-animated { display: none !important; }
-.trace-card {
-  border-radius: 5px;
-  padding: 13px 14px 11px;
-  box-shadow: 4px 6px 22px rgba(0,0,0,0.45);
-  position: relative;
+.traces-stream-viewport.reduced-motion .trace-item-animated { display: none !important; }
+.trace-item {
   width: 100%;
   max-width: 248px;
+  padding: 0.35rem 0.15rem;
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: left;
+  transition: opacity 0.2s ease;
 }
-.trace-card::after {
-  content: '';
-  position: absolute; inset: 0;
-  border-radius: 5px;
-  background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, transparent 50%);
-  pointer-events: none;
+.trace-item:hover,
+.trace-item:focus-visible {
+  opacity: 1;
+  outline: none;
 }
-.trace-card-animated {
+.trace-item:hover .trace-item-quote,
+.trace-item:focus-visible .trace-item-quote {
+  color: rgba(255,221,184,0.95);
+  text-decoration: underline;
+  text-decoration-color: rgba(245,196,154,0.32);
+  text-underline-offset: 3px;
+}
+.trace-item-animated {
   position: absolute;
   left: 0;
   right: 0;
@@ -282,40 +290,28 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 @keyframes trace-rise {
   0% { transform: translateY(105%); opacity: 0; }
   7% { opacity: 1; }
-  90% { opacity: 0.92; }
+  90% { opacity: 0.88; }
   100% { transform: translateY(-115%); opacity: 0; }
 }
-.trace-card-text {
-  font-family: 'Caveat', cursive;
-  font-size: 18px;
-  line-height: 1.45;
-  margin-bottom: 10px;
+.trace-item-quote {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(245,240,232,0.78);
+  margin-bottom: 0.4rem;
   word-break: break-word;
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.trace-card-footer {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
+.trace-item-alias {
   font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  border-top: 1px solid rgba(0,0,0,0.1);
-  padding-top: 8px;
-}
-.trace-card-alias { font-weight: 500; }
-.trace-card-country { opacity: 0.75; }
-.trace-card-mood {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 2px 7px;
-  border-radius: 10px;
-  background: rgba(0,0,0,0.06);
-  margin-left: auto;
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(201,168,76,0.52);
+  letter-spacing: 0.03em;
 }
 
 @media (min-width: 901px) {
@@ -342,7 +338,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trace-card-animated { animation: none !important; display: none !important; }
+  .trace-item-animated { animation: none !important; display: none !important; }
   .traces-stream-viewport { -webkit-mask-image: none; mask-image: none; }
 }
 
@@ -435,7 +431,8 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   }
   .traces-stream-viewport { height: 155px; }
   .traces-stream-label { margin-bottom: 0.45rem; font-size: 9px; }
-  .trace-card-text { font-size: 15px; margin-bottom: 7px; -webkit-line-clamp: 4; }
+  .trace-item-quote { font-size: 14px; line-height: 1.5; -webkit-line-clamp: 3; margin-bottom: 0.3rem; }
+  .trace-item-alias { font-size: 10px; }
 
   .section-block {
     order: 9;
@@ -2452,57 +2449,111 @@ function updateTracesEmptyState() {
   empty.classList.toggle('show', !tracesNotes.length);
 }
 
-function buildTraceCardElement(note, animated) {
-  var color = note.color || '#fef08a';
-  var light = isLightBg(color);
-  var tc = light ? '#1a1612' : '#f5f0e8';
-  var mc = light ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.5)';
-  var bc = light ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
+function bindTraceItemClick(el, note) {
+  el.setAttribute('role', 'button');
+  el.setAttribute('tabindex', '0');
+  el.setAttribute('aria-label', 'Open this trace on the map');
+  el.addEventListener('click', function(e) {
+    e.stopPropagation();
+    focusTraceOnMap(note);
+  });
+  el.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      focusTraceOnMap(note);
+    }
+  });
+}
 
-  var card = document.createElement('div');
-  card.className = 'trace-card' + (animated ? ' trace-card-animated' : '');
+function buildTraceItemElement(note, animated) {
+  var block = document.createElement('div');
+  block.className = 'trace-item' + (animated ? ' trace-item-animated' : '');
 
-  var text = document.createElement('div');
-  text.className = 'trace-card-text';
-  text.style.color = tc;
-  text.textContent = note.content || '';
+  var quote = document.createElement('div');
+  quote.className = 'trace-item-quote';
+  var content = (note.content || '').trim();
+  quote.textContent = content ? '\u201c' + content + '\u201d' : '\u201c\u201d';
 
-  var footer = document.createElement('div');
-  footer.className = 'trace-card-footer';
-  footer.style.borderTopColor = bc;
+  var alias = document.createElement('div');
+  alias.className = 'trace-item-alias';
+  alias.textContent = '\u2014 ' + (note.alias || 'Anonymous');
 
-  var alias = document.createElement('span');
-  alias.className = 'trace-card-alias';
-  alias.style.color = mc;
-  alias.textContent = note.alias || 'Anonymous';
-
-  var country = document.createElement('span');
-  country.className = 'trace-card-country';
-  country.style.color = mc;
-  country.textContent = note.country || '';
-
-  footer.appendChild(alias);
-  footer.appendChild(country);
-
-  if (note.mood) {
-    var mood = document.createElement('span');
-    mood.className = 'trace-card-mood';
-    mood.style.color = mc;
-    mood.textContent = moodLabel(note.mood);
-    footer.appendChild(mood);
-  }
-
-  card.style.background = color;
-  card.appendChild(text);
-  card.appendChild(footer);
+  block.appendChild(quote);
+  block.appendChild(alias);
+  bindTraceItemClick(block, note);
 
   if (animated) {
-    card.addEventListener('animationend', function() {
-      if (card.parentNode) card.parentNode.removeChild(card);
+    block.addEventListener('animationend', function() {
+      if (block.parentNode) block.parentNode.removeChild(block);
     });
   }
 
-  return card;
+  return block;
+}
+
+function findMapMarkerForNote(note) {
+  if (!note || !mapMarkers || !mapMarkers.length) return null;
+  var i, m;
+  if (note.id) {
+    for (i = 0; i < mapMarkers.length; i++) {
+      m = mapMarkers[i];
+      if (m._note && m._note.id === note.id) return m;
+    }
+  }
+  if (note.created_at) {
+    for (i = 0; i < mapMarkers.length; i++) {
+      m = mapMarkers[i];
+      if (m._note && m._note.created_at === note.created_at) return m;
+    }
+  }
+  if (note.content) {
+    for (i = 0; i < mapMarkers.length; i++) {
+      m = mapMarkers[i];
+      if (m._note && m._note.content === note.content) {
+        if (!note.alias || m._note.alias === note.alias) return m;
+      }
+    }
+  }
+  return null;
+}
+
+function pulseMapMarker(marker) {
+  if (!marker) return;
+  var el = marker.getElement();
+  if (!el) return;
+  var dot = el.querySelector('.map-dot');
+  if (!dot) return;
+  dot.style.transform = 'scale(2.5)';
+  dot.style.transition = 'transform 0.3s';
+  setTimeout(function() { dot.style.transform = 'scale(1)'; }, 600);
+}
+
+async function focusTraceOnMap(note) {
+  currentMapDate = todayISO();
+  document.getElementById('map-overlay').classList.add('open');
+  window.location.hash = 'wall';
+  var postedDate = localStorage.getItem('pinit_posted_date');
+  if (postedDate) document.getElementById('find-my-note-btn').style.display = 'inline-flex';
+
+  if (!map) initMap();
+  await loadMapNotes();
+  ensureNotesLiveSubscription();
+
+  if (!note) return;
+
+  var marker = findMapMarkerForNote(note);
+  if (!marker) return;
+
+  var latlng = marker.getLatLng();
+  var flyDelay = prefersReducedMotion ? 100 : 1300;
+  map.flyTo(latlng, Math.max(map.getZoom(), 5), {
+    animate: !prefersReducedMotion,
+    duration: prefersReducedMotion ? 0.2 : 1.2
+  });
+  setTimeout(function() {
+    showNotePopup(marker._note, marker);
+    pulseMapMarker(marker);
+  }, flyDelay);
 }
 
 function getNextTraceNote() {
@@ -2520,17 +2571,17 @@ function spawnTraceCard(note) {
   var data = note || getNextTraceNote();
   if (!data) return;
 
-  var active = viewport.querySelectorAll('.trace-card-animated').length;
+  var active = viewport.querySelectorAll('.trace-item-animated').length;
   if (active >= 4) return;
 
-  viewport.appendChild(buildTraceCardElement(data, true));
+  viewport.appendChild(buildTraceItemElement(data, true));
 }
 
 function restartTracesStream() {
   if (traceSpawnTimer) clearInterval(traceSpawnTimer);
   var viewport = document.getElementById('traces-stream-viewport');
   if (viewport) {
-    viewport.querySelectorAll('.trace-card-animated').forEach(function(el) { el.remove(); });
+    viewport.querySelectorAll('.trace-item-animated').forEach(function(el) { el.remove(); });
   }
   if (!tracesNotes.length || prefersReducedMotion) return;
 
@@ -2546,9 +2597,8 @@ function renderStaticTraces() {
 
   if (!tracesNotes.length) return;
 
-  var shown = tracesNotes.slice(0, 3);
-  shown.forEach(function(note) {
-    wrap.appendChild(buildTraceCardElement(note, false));
+  tracesNotes.slice(0, 2).forEach(function(note) {
+    wrap.appendChild(buildTraceItemElement(note, false));
   });
 
   if (tracesNotes.length <= 1) return;
@@ -2559,10 +2609,10 @@ function renderStaticTraces() {
     staticIndex = (staticIndex + 1) % tracesNotes.length;
     var note = tracesNotes[staticIndex];
     wrap.innerHTML = '';
-    wrap.appendChild(buildTraceCardElement(note, false));
+    wrap.appendChild(buildTraceItemElement(note, false));
     if (tracesNotes.length > 1) {
       var next = tracesNotes[(staticIndex + 1) % tracesNotes.length];
-      wrap.appendChild(buildTraceCardElement(next, false));
+      wrap.appendChild(buildTraceItemElement(next, false));
     }
   }, 14000);
 }
