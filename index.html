@@ -67,7 +67,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   overflow: hidden;
 }
 
-.brand { margin-bottom: 0.65rem; }
+.brand { margin-bottom: 0.5rem; }
 .brand-name {
   font-family: 'DM Sans', sans-serif;
   font-size: 13px; font-weight: 500;
@@ -100,32 +100,13 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   font-weight: 300;
 }
 
-.landing-chips {
+.landing-live {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: stretch;
   gap: 6px;
   margin-bottom: 0.5rem;
   min-height: 0;
-}
-
-.hero-stat {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: rgba(255,255,255,0.45);
-  margin-bottom: 0;
-  padding: 5px 10px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.hero-stat strong {
-  color: var(--gold-light);
-  font-weight: 500;
-  font-family: 'Playfair Display', serif;
-  font-size: 13px;
 }
 
 .divider {
@@ -137,7 +118,39 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 .hero-actions {
   display: flex; flex-direction: column;
   align-items: flex-start; gap: 6px;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.5rem;
+}
+
+.live-day {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.live-day-tag {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.live-day-date {
+  font-size: 11px;
+  color: rgba(220,225,240,0.68);
+  line-height: 1.35;
+}
+.live-day-voices {
+  font-size: 11px;
+  color: rgba(255,255,255,0.42);
+  line-height: 1.35;
+}
+.live-day-voices strong {
+  color: var(--gold-light);
+  font-family: 'Playfair Display', serif;
+  font-weight: 500;
 }
 
 .post-btn {
@@ -184,6 +197,17 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   flex-shrink: 0;
   box-shadow: 0 0 40px rgba(68,136,255,0.15), 0 8px 24px rgba(0,0,0,0.35);
   border: 1px solid rgba(255,255,255,0.08);
+  cursor: grab;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-globe-wrap.is-dragging {
+  cursor: grabbing;
+  touch-action: none;
+}
+.mobile-globe-wrap:focus-visible {
+  outline: 2px solid rgba(201,168,76,0.55);
+  outline-offset: 3px;
 }
 .mobile-globe-wrap canvas {
   display: block;
@@ -229,8 +253,8 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   height: 360px;
   overflow: hidden;
   width: 100%;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 4%, #000 96%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 4%, #000 96%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
 }
 .traces-stream-viewport.is-paused .passing-track.is-rolling {
   animation-play-state: paused;
@@ -274,8 +298,8 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 .passing-track {
   display: none;
   flex-direction: column;
-  gap: 32px;
-  padding: 0.5rem 0 32px;
+  gap: var(--trace-gap, 88px);
+  padding: 0.5rem 0 var(--trace-gap, 88px);
   will-change: transform;
 }
 .passing-track.is-rolling {
@@ -315,7 +339,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   font-style: italic;
   font-size: 16px;
   line-height: 1.55;
-  color: rgba(245,240,232,0.9);
+  color: rgba(245,240,232,0.82);
   margin-bottom: 0.45rem;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -357,15 +381,12 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .hero-actions { margin-bottom: 0.4rem; gap: 5px; }
   .post-btn { padding: 8px 18px; font-size: 12px; }
   .stat-btn { padding: 6px 14px; font-size: 10px; }
-  .landing-chips { margin-bottom: 0.35rem; gap: 5px; }
-  .hero-stat { padding: 4px 9px; font-size: 10px; }
-  .hero-stat strong { font-size: 12px; }
+  .landing-live { margin-bottom: 0.35rem; gap: 5px; }
   .world-feeling { padding: 4px 9px; }
   .world-feeling-main { font-size: 12px; }
   .world-feeling-sub { font-size: 9px; }
   .site-footer { margin-top: 0.25rem; padding-top: 0.4rem; }
   .traces-stream-viewport { height: 300px; }
-  .passing-track { gap: 26px; padding-bottom: 26px; }
   .trace-item-quote { font-size: 15px; line-height: 1.48; }
 }
 
@@ -391,8 +412,9 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     width: 100%; max-width: 100%;
     height: auto; min-height: auto;
     position: relative;
-    padding: 1rem 1rem 1.5rem;
-    padding-top: max(1rem, env(safe-area-inset-top));
+    padding: 0.75rem 0.9rem 0.85rem;
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+    padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
     background: linear-gradient(180deg, rgba(4,6,15,0.92) 0%, rgba(4,6,15,0.75) 70%, rgba(4,6,15,0.4) 100%);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
@@ -403,102 +425,182 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     flex-direction: column;
   }
 
-  .brand { margin-bottom: 0.75rem; order: 1; }
-  .brand-tagline { margin-top: 3px; font-size: 10px; }
+  .brand { margin-bottom: 0.5rem; }
+  .brand-tagline { margin-top: 2px; font-size: 9px; }
 
   .hero-quote {
-    order: 3;
-    font-size: clamp(17px, 4.6vw, 20px);
-    line-height: 1.35;
-    margin-bottom: 0.45rem;
+    font-size: clamp(15px, 4.2vw, 18px);
+    line-height: 1.32;
+    margin-bottom: 0.35rem;
   }
   .divider {
-    order: 4;
-    width: 32px;
-    margin-bottom: 0.55rem;
+    width: 28px;
+    margin-bottom: 0.4rem;
   }
   .hero-body {
-    order: 5;
-    font-size: 13px;
-    line-height: 1.58;
-    margin-bottom: 0.65rem;
-  }
-
-  .landing-chips {
-    order: 7;
+    font-size: 12px;
+    line-height: 1.48;
     margin-bottom: 0.5rem;
-    gap: 5px;
+    max-width: 28em;
   }
 
-  .hero-stat {
-    margin-bottom: 0;
-    padding: 4px 10px;
-    font-size: 11px;
+  .landing-live {
+    margin-bottom: 0.4rem;
+    gap: 4px;
   }
-  .hero-stat strong { font-size: 13px; }
+  .live-day { padding: 4px 8px; }
+  .live-day-date { font-size: 10px; }
+  .live-day-voices { font-size: 10px; }
 
   .world-feeling {
     margin-bottom: 0;
-    padding: 5px 10px;
+    padding: 3px 8px;
   }
-  .world-feeling-main { font-size: 13px; }
-  .world-feeling-sub { margin-bottom: 0; font-size: 10px; }
+  .world-feeling-main { font-size: 12px; }
+  .world-feeling-sub { margin-bottom: 0; font-size: 9px; }
 
   .mobile-globe-wrap {
     display: block;
-    order: 2;
-    width: 132px;
-    height: 132px;
-    margin: 0 0 0.6rem;
+    width: 102px;
+    height: 102px;
+    margin: 0 0 0.4rem;
   }
 
-  #helix-canvas { opacity: 0.3; }
+  #helix-canvas { opacity: 0.3; pointer-events: none !important; }
 
-  /* Buttons before count/mood/traces on mobile */
   .hero-actions {
-    order: 6;
     width: 100%;
-    margin-bottom: 0.65rem;
-    gap: 7px;
+    margin-bottom: 0.45rem;
+    gap: 5px;
   }
   .traces-stream-wrap {
-    order: 8;
     max-width: 100%;
     width: 100%;
-    margin: 0 0 0.5rem 0;
-    padding: 0.55rem 0.65rem 0.65rem;
+    margin: 0 0 0.4rem 0;
+    padding: 0.45rem 0.55rem 0.5rem;
   }
-  .traces-stream-viewport { height: 140px; }
-  .traces-stream-label { margin-bottom: 0.35rem; font-size: 9px; }
-  .passing-track { gap: 20px; padding-bottom: 20px; }
-  .traces-stream-static { gap: 16px; }
-  .trace-item-quote { font-size: 13px; line-height: 1.45; margin-bottom: 0.3rem; }
-  .trace-item-alias { font-size: 10px; }
+  .traces-stream-viewport { height: 118px; }
+  .traces-stream-label { margin-bottom: 0.3rem; font-size: 9px; }
+  .passing-track { gap: var(--trace-gap, 112px); padding-bottom: var(--trace-gap, 112px); }
+  .traces-stream-static { gap: 14px; }
+  .trace-item { padding: 0.15rem 0.1rem; }
+  .trace-item-quote {
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 0.2rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  .trace-item-alias { font-size: 9px; }
 
   .site-footer {
-    order: 9;
-    margin-top: 0.55rem;
-    padding-top: 0.65rem;
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    margin-top: 0.4rem;
+    padding-top: 0.5rem;
+    padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
   }
-  .site-footer-links { gap: 4px 12px; margin-bottom: 8px; }
-  .site-footer-links button { font-size: 11px; }
-  .site-footer-copy { font-size: 10px; }
+  .site-footer-links { gap: 3px 10px; margin-bottom: 5px; }
+  .site-footer-links button { font-size: 10px; }
+  .site-footer-copy { font-size: 9px; }
 
   .info-modal { margin: 1rem auto; padding: 1.25rem; }
 
   .post-btn {
     width: 100%;
     text-align: center;
-    padding: 12px 18px;
-    font-size: 13px;
+    padding: 10px 16px;
+    font-size: 12px;
+    min-height: 44px;
   }
   .stat-btn {
     width: 100%;
     text-align: center;
-    padding: 9px 16px;
-    font-size: 11px;
+    padding: 8px 14px;
+    font-size: 10px;
+    min-height: 40px;
   }
+
+  .install-prompt {
+    margin-top: 0.35rem;
+    padding: 6px 8px;
+    border-radius: 6px;
+  }
+  .install-prompt-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .install-prompt-text {
+    font-size: 10px;
+    line-height: 1.35;
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 0;
+  }
+  .install-prompt-actions {
+    flex-shrink: 0;
+    gap: 6px;
+    margin: 0;
+  }
+  .install-prompt-btn {
+    padding: 4px 10px;
+    font-size: 9px;
+  }
+  .install-prompt-dismiss {
+    font-size: 10px;
+    padding: 2px 0;
+    white-space: nowrap;
+  }
+
+  .traces-stream-empty { padding: 0.65rem 0.5rem; }
+  .traces-stream-empty h3 { font-size: 14px; margin-bottom: 0.3rem; }
+  .traces-stream-empty p { font-size: 10px; line-height: 1.45; }
+}
+
+@media (max-width: 700px) and (orientation: portrait) {
+  .header { padding: 0.65rem 0.85rem 0.75rem; }
+  .brand { margin-bottom: 0.35rem; }
+  .brand-name { font-size: 12px; }
+  .mobile-globe-wrap {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 0.3rem;
+  }
+  .hero-actions { margin-bottom: 0.4rem; gap: 4px; }
+  .hero-quote {
+    font-size: clamp(14px, 3.9vw, 17px);
+    line-height: 1.3;
+    margin-bottom: 0.28rem;
+  }
+  .divider { margin-bottom: 0.28rem; }
+  .hero-body {
+    font-size: 11.5px;
+    line-height: 1.45;
+    margin-bottom: 0.4rem;
+  }
+  .landing-live .world-feeling-sub { display: none; }
+  .traces-stream-viewport {
+    height: 112px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  }
+  .traces-stream-empty p { display: none; }
+}
+
+@media (min-width: 701px) {
+  #helix-canvas {
+    pointer-events: auto;
+    cursor: grab;
+  }
+  #helix-canvas.is-dragging { cursor: grabbing; }
+}
+
+@media (max-width: 700px) and (orientation: landscape) {
+  .mobile-globe-wrap { display: none !important; }
+  #helix-canvas { opacity: 1; pointer-events: auto !important; cursor: grab; }
+  #helix-canvas.is-dragging { cursor: grabbing; }
 }
 
 /* Country tabs */
@@ -670,8 +772,8 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   gap: 4px 6px;
   max-width: 100%;
 }
-.landing-chips .world-feeling .section-label { display: none; }
-.landing-chips .world-feeling-bars { display: none !important; }
+.landing-live .world-feeling .section-label { display: none; }
+.landing-live .world-feeling-bars { display: none !important; }
 .world-feeling-main {
   font-family: 'Playfair Display', serif;
   font-size: 13px;
@@ -1327,41 +1429,47 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 /* Make landing text readable over space bg */
 
 /* Background globe canvas */
-#helix-canvas { position: fixed; inset: 0; width: 100% !important; height: 100% !important; z-index: 0; pointer-events: none; display: block; }
-
-@media (max-width: 700px) and (orientation: landscape) {
-  .mobile-globe-wrap { display: none !important; }
-  #helix-canvas { opacity: 1; }
+#helix-canvas {
+  position: fixed; inset: 0;
+  width: 100% !important; height: 100% !important;
+  z-index: 0; pointer-events: none;
+  display: block;
+}
+#helix-canvas:focus-visible {
+  outline: 2px solid rgba(201,168,76,0.45);
+  outline-offset: -4px;
 }
 </style>
 </head>
 <body>
 
-<canvas id="helix-canvas"></canvas>
+<canvas id="helix-canvas" tabindex="0" role="img" aria-label="Interactive globe. Drag to rotate. Press Enter to open today&rsquo;s wall."></canvas>
 <div class="header">
   <div class="header-inner">
     <div class="brand">
       <div class="brand-name">Pinit</div>
-      <div class="brand-tagline">One human · One note · One day · One trace</div>
+      <div class="brand-tagline">One thought from each person. One day at a time.</div>
     </div>
 
-    <div class="mobile-globe-wrap" id="mobile-globe-wrap" aria-hidden="true">
+    <div class="mobile-globe-wrap" id="mobile-globe-wrap" role="button" tabindex="0" aria-label="Interactive globe. Drag to rotate. Tap or press Enter to open today&rsquo;s wall.">
       <canvas id="mobile-globe-canvas"></canvas>
+    </div>
+
+    <div class="hero-actions">
+      <button class="post-btn" id="open-modal-btn" onclick="openModal()">Leave your Trace</button>
+      <button class="stat-btn" onclick="openMap()">Explore Today&rsquo;s Wall ↗</button>
+      <button class="stat-btn" onclick="openArchive()">Browse the Archive</button>
     </div>
 
     <div class="hero-quote">&ldquo;Billions of people have walked this earth. Most left no trace. <em>This is your trace.</em>&rdquo;</div>
     <div class="divider"></div>
-    <div class="hero-body">One note per person, per day. Your voice joins the world wall — remembered each night in the archive.</div>
+    <div class="hero-body">Leave something that outlives today.</div>
 
-    <div class="hero-actions">
-      <button class="post-btn" id="open-modal-btn" onclick="openModal()">Leave your Trace</button>
-      <button class="stat-btn" onclick="openMap()">Explore today&rsquo;s wall ↗</button>
-      <button class="stat-btn" onclick="openArchive()">Browse the archive</button>
-    </div>
-
-    <div class="landing-chips">
-      <div class="hero-stat" id="hero-stat" style="display:none;">
-        <strong id="stat-notes">0</strong> traces on the wall today
+    <div class="landing-live">
+      <div class="live-day" id="live-day">
+        <span class="live-day-tag">TODAY</span>
+        <span class="live-day-date" id="live-day-date"></span>
+        <span class="live-day-voices" id="live-day-voices">The first voice is still waiting</span>
       </div>
 
       <div class="world-feeling" id="world-feeling" style="display:none;">
@@ -1395,10 +1503,12 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
       </nav>
       <p class="site-footer-copy">&copy; 2026 Pinit &middot; <a href="https://www.pinitworld.com">pinitworld.com</a></p>
       <div class="install-prompt" id="install-prompt" hidden>
-        <p class="install-prompt-text" id="install-prompt-text"></p>
-        <div class="install-prompt-actions">
-          <button type="button" class="install-prompt-btn" id="install-prompt-action" hidden>Install app</button>
-          <button type="button" class="install-prompt-dismiss" id="install-prompt-dismiss">Dismiss</button>
+        <div class="install-prompt-inner">
+          <p class="install-prompt-text" id="install-prompt-text"></p>
+          <div class="install-prompt-actions">
+            <button type="button" class="install-prompt-btn" id="install-prompt-action" hidden>Install app</button>
+            <button type="button" class="install-prompt-dismiss" id="install-prompt-dismiss">Dismiss</button>
+          </div>
         </div>
       </div>
     </footer>
@@ -1621,6 +1731,10 @@ var lastPostedNote = null;
 
 var TRACES_FETCH_LIMIT = 24;
 var TRACE_PREVIEW_MAX = 140;
+
+function isMobilePortrait() {
+  return window.matchMedia('(max-width: 700px) and (orientation: portrait)').matches;
+}
 var tracesNotes = [];
 var landingNoteCount = 0;
 var landingPollTimer = null;
@@ -1863,13 +1977,41 @@ async function loadNotes() {
   var { count, error } = await sb.from('notes').select('*', { count: 'exact', head: true }).eq('note_date', today);
   if (error) return;
   landingNoteCount = count || 0;
-  var statEl = document.getElementById('stat-notes');
-  var heroStat = document.getElementById('hero-stat');
-  if (statEl && count !== null) {
-    statEl.textContent = count.toLocaleString();
-    if (heroStat) heroStat.style.display = count > 0 ? 'inline-flex' : 'none';
-  }
+  updateLiveDayDisplay(landingNoteCount);
 }
+
+function formatLiveLocalDate() {
+  return new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function voiceCountHtml(count) {
+  if (count === 0) return 'The first voice is still waiting';
+  if (count === 1) return '<strong>1</strong> voice';
+  return '<strong>' + count.toLocaleString() + '</strong> voices';
+}
+
+function updateLiveDayDisplay(count) {
+  var dateEl = document.getElementById('live-day-date');
+  var voicesEl = document.getElementById('live-day-voices');
+  if (dateEl) dateEl.textContent = formatLiveLocalDate();
+  if (voicesEl) voicesEl.innerHTML = voiceCountHtml(count == null ? 0 : count);
+}
+
+function openMapAtGlobe(lat, lng) {
+  openMap();
+  var attempts = 0;
+  function tryFly() {
+    if (!map) {
+      if (attempts++ < 24) setTimeout(tryFly, 100);
+      return;
+    }
+    if (typeof lat === 'number' && typeof lng === 'number' && !isNaN(lat) && !isNaN(lng)) {
+      map.flyTo([lat, lng], 4, { animate: !prefersReducedMotion, duration: prefersReducedMotion ? 0 : 1.1 });
+    }
+  }
+  tryFly();
+}
+window.pinitOpenMapAtGlobe = openMapAtGlobe;
 
 function isLight(hex) {
   if (!hex || hex[0]!=='#') return true;
@@ -2500,10 +2642,7 @@ async function pollLandingUpdates() {
   var remoteCount = countRes.count || 0;
   if (remoteCount !== landingNoteCount) {
     landingNoteCount = remoteCount;
-    var statEl = document.getElementById('stat-notes');
-    var heroStat = document.getElementById('hero-stat');
-    if (statEl) statEl.textContent = remoteCount.toLocaleString();
-    if (heroStat) heroStat.style.display = remoteCount > 0 ? 'inline-flex' : 'none';
+    updateLiveDayDisplay(remoteCount);
     await refreshTracesFromServer();
     await loadWorldFeeling();
     if (map && document.getElementById('map-overlay').classList.contains('open') && currentMapDate === today) {
@@ -2525,11 +2664,16 @@ function initLandingLiveSync() {
   loadNotes();
   loadWorldFeeling();
   refreshTracesFromServer();
+  updateLiveDayDisplay(landingNoteCount);
   ensureNotesLiveSubscription();
 
   if (!landingPollTimer) {
     landingPollTimer = setInterval(pollLandingUpdates, 25000);
   }
+
+  window.addEventListener('orientationchange', function() {
+    setTimeout(rebuildPassingTrack, 150);
+  });
 }
 
 function updateTracesEmptyState() {
@@ -2540,8 +2684,9 @@ function updateTracesEmptyState() {
 
 function truncateTracePreview(text) {
   var t = (text || '').trim().replace(/\s+/g, ' ');
-  if (t.length <= TRACE_PREVIEW_MAX) return t;
-  return t.slice(0, TRACE_PREVIEW_MAX - 1).trim() + '\u2026';
+  var max = isMobilePortrait() ? 80 : TRACE_PREVIEW_MAX;
+  if (t.length <= max) return t;
+  return t.slice(0, max - 1).trim() + '\u2026';
 }
 
 function bindTraceItemClick(el, note) {
@@ -2614,8 +2759,11 @@ function rebuildPassingTrack() {
     requestAnimationFrame(function() {
       var halfHeight = track.scrollHeight / 2;
       if (!halfHeight) return;
-      var pxPerSec = 20;
-      var duration = Math.max(28, Math.min(120, halfHeight / pxPerSec));
+      var vpHeight = viewport.clientHeight || 360;
+      var itemGap = isMobilePortrait() ? vpHeight : Math.max(vpHeight * 0.82, 100);
+      track.style.setProperty('--trace-gap', Math.round(itemGap) + 'px');
+      var pxPerSec = isMobilePortrait() ? 6 : 7;
+      var duration = Math.max(48, Math.min(180, halfHeight / pxPerSec));
       track.style.setProperty('--credits-duration', duration + 's');
       track.classList.add('is-rolling');
     });
@@ -2634,7 +2782,7 @@ function renderStaticTraces() {
   }
   if (!tracesNotes.length) return;
 
-  tracesNotes.slice(0, 3).forEach(function(note) {
+  tracesNotes.slice(0, isMobilePortrait() ? 1 : 3).forEach(function(note) {
     wrap.appendChild(buildTraceItemElement(note));
   });
 }
@@ -3262,12 +3410,120 @@ init();
   fillLight.position.set(-5,-2,-3);
   scene.add(fillLight);
 
+  // ── Interaction (drag, inertia, tap-to-map) ───────────────
+  var raycaster = new THREE.Raycaster();
+  var pointerNdc = new THREE.Vector2();
+  var isDragging = false;
+  var activePointer = null;
+  var lastPointerX = 0;
+  var dragDistance = 0;
+  var spinVelocity = 0;
+  var lastInteractAt = Date.now();
+  var idleResumeMs = 3200;
+  var tapThreshold = 6;
+
+  function desktopGlobeActive() {
+    return window.innerWidth > 700 || (window.innerWidth <= 700 && !window.matchMedia('(orientation: portrait)').matches);
+  }
+
+  function markGlobeInteract() {
+    lastInteractAt = Date.now();
+  }
+
+  function sphereHitToLatLng(hitPoint) {
+    var local = hitPoint.clone();
+    earth.worldToLocal(local);
+    local.normalize();
+    var lat = Math.asin(Math.max(-1, Math.min(1, local.y))) * (180 / Math.PI);
+    var lng = Math.atan2(local.x, local.z) * (180 / Math.PI);
+    return { lat: lat, lng: lng };
+  }
+
+  function pickGlobeLatLng(clientX, clientY) {
+    pointerNdc.x = (clientX / window.innerWidth) * 2 - 1;
+    pointerNdc.y = -(clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(pointerNdc, camera);
+    var hits = raycaster.intersectObject(earth);
+    if (!hits.length) return null;
+    return sphereHitToLatLng(hits[0].point);
+  }
+
+  function openGlobeMap(clientX, clientY) {
+    var ll = (clientX != null) ? pickGlobeLatLng(clientX, clientY) : null;
+    if (ll && window.pinitOpenMapAtGlobe) {
+      window.pinitOpenMapAtGlobe(ll.lat, ll.lng);
+    } else if (typeof openMap === 'function') {
+      openMap();
+    }
+  }
+
+  canvas.addEventListener('pointerdown', function(e) {
+    if (!desktopGlobeActive()) return;
+    isDragging = true;
+    activePointer = e.pointerId;
+    lastPointerX = e.clientX;
+    dragDistance = 0;
+    spinVelocity = 0;
+    canvas.classList.add('is-dragging');
+    markGlobeInteract();
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+
+  canvas.addEventListener('pointermove', function(e) {
+    if (!isDragging || e.pointerId !== activePointer) return;
+    var dx = e.clientX - lastPointerX;
+    dragDistance += Math.abs(dx);
+    lastPointerX = e.clientX;
+    spinVelocity = dx * 0.004;
+    earth.rotation.y += spinVelocity;
+    clouds.rotation.y += spinVelocity * 1.15;
+    markGlobeInteract();
+  });
+
+  function endDesktopDrag(e) {
+    if (!isDragging || (e && e.pointerId !== activePointer)) return;
+    var wasTap = dragDistance < tapThreshold;
+    isDragging = false;
+    activePointer = null;
+    canvas.classList.remove('is-dragging');
+    if (e) {
+      try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
+      if (wasTap) openGlobeMap(e.clientX, e.clientY);
+    }
+    markGlobeInteract();
+  }
+
+  canvas.addEventListener('pointerup', endDesktopDrag);
+  canvas.addEventListener('pointercancel', endDesktopDrag);
+
+  canvas.addEventListener('keydown', function(e) {
+    if (!desktopGlobeActive()) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openGlobeMap();
+    }
+  });
+
   // ── Animation ─────────────────────────────────────────────
   var motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function animate(){
     requestAnimationFrame(animate);
-    if (!motionReduced) {
-      earth.rotation.y  += 0.00055;
+    if (!motionReduced && desktopGlobeActive()) {
+      if (!isDragging) {
+        if (Math.abs(spinVelocity) > 0.00005) {
+          earth.rotation.y += spinVelocity;
+          clouds.rotation.y += spinVelocity * 1.15;
+          spinVelocity *= 0.93;
+        } else {
+          spinVelocity = 0;
+          if (Date.now() - lastInteractAt > idleResumeMs) {
+            earth.rotation.y += 0.00055;
+            clouds.rotation.y += 0.00068;
+          }
+        }
+      }
+    } else if (!motionReduced && !desktopGlobeActive()) {
+      earth.rotation.y += 0.00055;
       clouds.rotation.y += 0.00068;
     }
     renderer.render(scene, camera);
@@ -3283,10 +3539,10 @@ init();
   var wrap = document.getElementById('mobile-globe-wrap');
   if (!canvas || !wrap || typeof THREE === 'undefined') return;
 
-  var size = 140;
+  var size = 102;
   var motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function isMobilePortrait() {
+  function isMobilePortraitGlobe() {
     return window.innerWidth <= 700 && window.matchMedia('(orientation: portrait)').matches;
   }
 
@@ -3325,12 +3581,116 @@ init();
   sun.position.set(3, 2, 4);
   scene.add(sun);
 
+  var raycaster = new THREE.Raycaster();
+  var pointerNdc = new THREE.Vector2();
+  var isDragging = false;
+  var activePointer = null;
+  var lastPointerX = 0;
+  var dragDistance = 0;
+  var spinVelocity = 0;
+  var lastInteractAt = Date.now();
+  var idleResumeMs = 3200;
+  var tapThreshold = 6;
+
+  function markGlobeInteract() {
+    lastInteractAt = Date.now();
+  }
+
+  function sphereHitToLatLng(hitPoint) {
+    var local = hitPoint.clone();
+    earth.worldToLocal(local);
+    local.normalize();
+    var lat = Math.asin(Math.max(-1, Math.min(1, local.y))) * (180 / Math.PI);
+    var lng = Math.atan2(local.x, local.z) * (180 / Math.PI);
+    return { lat: lat, lng: lng };
+  }
+
+  function pickGlobeLatLng(clientX, clientY) {
+    var rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    pointerNdc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    pointerNdc.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointerNdc, camera);
+    var hits = raycaster.intersectObject(earth);
+    if (!hits.length) return null;
+    return sphereHitToLatLng(hits[0].point);
+  }
+
+  function openGlobeMap(clientX, clientY) {
+    var ll = (clientX != null) ? pickGlobeLatLng(clientX, clientY) : null;
+    if (ll && window.pinitOpenMapAtGlobe) {
+      window.pinitOpenMapAtGlobe(ll.lat, ll.lng);
+    } else if (typeof openMap === 'function') {
+      openMap();
+    }
+  }
+
+  function onPointerDown(e) {
+    if (!isMobilePortraitGlobe()) return;
+    isDragging = true;
+    activePointer = e.pointerId;
+    lastPointerX = e.clientX;
+    dragDistance = 0;
+    spinVelocity = 0;
+    wrap.classList.add('is-dragging');
+    markGlobeInteract();
+    try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
+  }
+
+  function onPointerMove(e) {
+    if (!isDragging || e.pointerId !== activePointer) return;
+    if (e.cancelable) e.preventDefault();
+    var dx = e.clientX - lastPointerX;
+    dragDistance += Math.abs(dx);
+    lastPointerX = e.clientX;
+    spinVelocity = dx * 0.006;
+    earth.rotation.y += spinVelocity;
+    clouds.rotation.y += spinVelocity * 1.15;
+    markGlobeInteract();
+  }
+
+  function endMobileDrag(e) {
+    if (!isDragging || (e && e.pointerId !== activePointer)) return;
+    var wasTap = dragDistance < tapThreshold;
+    isDragging = false;
+    activePointer = null;
+    wrap.classList.remove('is-dragging');
+    if (e) {
+      try { wrap.releasePointerCapture(e.pointerId); } catch (err) {}
+      if (wasTap) openGlobeMap(e.clientX, e.clientY);
+    }
+    markGlobeInteract();
+  }
+
+  wrap.addEventListener('pointerdown', onPointerDown);
+  wrap.addEventListener('pointermove', onPointerMove, { passive: false });
+  wrap.addEventListener('pointerup', endMobileDrag);
+  wrap.addEventListener('pointercancel', endMobileDrag);
+
+  wrap.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openGlobeMap();
+    }
+  });
+
   function tick() {
     requestAnimationFrame(tick);
-    if (!isMobilePortrait()) return;
+    if (!isMobilePortraitGlobe()) return;
     if (!motionReduced) {
-      earth.rotation.y += 0.0032;
-      clouds.rotation.y += 0.004;
+      if (!isDragging) {
+        if (Math.abs(spinVelocity) > 0.00008) {
+          earth.rotation.y += spinVelocity;
+          clouds.rotation.y += spinVelocity * 1.15;
+          spinVelocity *= 0.9;
+        } else {
+          spinVelocity = 0;
+          if (Date.now() - lastInteractAt > idleResumeMs) {
+            earth.rotation.y += 0.0032;
+            clouds.rotation.y += 0.004;
+          }
+        }
+      }
     }
     renderer.render(scene, camera);
   }
@@ -3394,7 +3754,7 @@ init();
     window.addEventListener('beforeinstallprompt', function(e) {
       e.preventDefault();
       deferredPrompt = e;
-      showInstallPrompt('Install Pinit on your device for quick access.', true);
+      showInstallPrompt('Install Pinit for quick access.', true);
     });
 
     if (action) {
@@ -3410,7 +3770,7 @@ init();
 
     if (isIos()) {
       setTimeout(function() {
-        showInstallPrompt('Tap Share, then Add to Home Screen to install Pinit.', false);
+        showInstallPrompt('Add via Share \u2192 Home Screen.', false);
       }, 3000);
     }
   }
