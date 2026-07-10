@@ -231,7 +231,12 @@ body.is-globe-dragging .info-modal-body * {
 .trace-status:hover { color: rgba(232,213,160,0.88); }
 .trace-status[hidden] { display: none !important; }
 .hero-actions.has-posted #open-modal-btn { display: none; }
-.hero-actions.has-posted .trace-status { display: block; margin-bottom: 10px; }
+.hero-actions.has-posted .trace-status { display: block; }
+@media (min-width: 701px) {
+  .hero-actions.has-posted .trace-status { margin-bottom: 10px; order: 1; }
+  .hero-actions.has-posted #listen-today-btn { order: 2; }
+  .hero-actions.has-posted #previous-days-btn { order: 3; }
+}
 
 .live-day {
   display: flex;
@@ -605,38 +610,6 @@ body.is-globe-dragging .info-modal-body * {
   }
   .post-btn,
   .hero-actions.has-posted .stat-btn-primary { width: 100%; }
-  .traces-stream-viewport {
-    height: 118px;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 10%, #000 26%, #000 74%, rgba(0,0,0,0.4) 90%, transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 10%, #000 26%, #000 74%, rgba(0,0,0,0.4) 90%, transparent 100%);
-  }
-  .traces-stream-wrap {
-    max-width: 100%;
-    width: 100%;
-    margin: 0 0 0.4rem 0;
-    padding: 0.35rem 0.25rem 0.45rem;
-  }
-  .traces-stream-static { gap: 14px; }
-  .trace-item { padding: 0.15rem 0.1rem; }
-  .trace-item-quote {
-    font-size: 12px;
-    line-height: 1.4;
-    margin-bottom: 0.2rem;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
-  }
-  .trace-item-alias { font-size: 9px; }
-
-  .site-footer {
-    margin-top: 0.75rem;
-    padding-top: 0.85rem;
-    padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
-  }
-  .site-footer-links { gap: 3px 10px; margin-bottom: 5px; }
-  .site-footer-links button { font-size: 10px; }
-  .site-footer-copy { font-size: 9px; }
 
   .info-modal { margin: 1rem auto; padding: 1.25rem; }
 
@@ -694,7 +667,14 @@ body.is-globe-dragging .info-modal-body * {
 }
 
 @media (max-width: 700px) and (orientation: portrait) {
-  .header { padding: 0.65rem 0.85rem 0.75rem; }
+  .header {
+    padding: 0.65rem 0.85rem calc(0.4rem + env(safe-area-inset-bottom));
+    padding-top: max(0.65rem, env(safe-area-inset-top));
+  }
+  .header-inner {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
   .brand { margin-bottom: 0.35rem; }
   .brand-name { font-size: 12px; }
   .mobile-globe-wrap {
@@ -702,25 +682,116 @@ body.is-globe-dragging .info-modal-body * {
     height: 100px;
     margin-bottom: 0.3rem;
   }
-  .hero-actions { margin-bottom: 0.4rem; gap: 4px; }
+  .hero-actions {
+    margin-bottom: 0.35rem;
+    gap: 5px;
+  }
+  #open-modal-btn { order: 1; }
+  #listen-today-btn { order: 2; }
+  #previous-days-btn { order: 3; }
+  #trace-status { order: 4; }
+  .hero-actions.has-posted .trace-status {
+    display: block;
+    margin: 2px 0 0;
+    padding: 0;
+    font-size: 9px;
+    color: rgba(201,168,76,0.42);
+    letter-spacing: 0.01em;
+    line-height: 1.35;
+    align-self: flex-start;
+  }
+  .hero-actions.has-posted .trace-status:hover {
+    color: rgba(201,168,76,0.62);
+  }
+  #previous-days-btn.stat-btn-secondary,
+  #previous-days-btn.stat-btn-quiet {
+    width: 100%;
+    text-align: center;
+    align-self: stretch;
+    background: transparent !important;
+    border: 1px solid rgba(255,255,255,0.14) !important;
+    color: rgba(220,225,240,0.5) !important;
+    padding: 8px 14px !important;
+    font-size: 11px !important;
+    min-height: 40px;
+    box-shadow: none !important;
+  }
+  #previous-days-btn.stat-btn-secondary:hover,
+  #previous-days-btn.stat-btn-quiet:hover {
+    color: rgba(220,225,240,0.68) !important;
+    border-color: rgba(255,255,255,0.22) !important;
+    background: rgba(255,255,255,0.04) !important;
+  }
   .hero-quote {
     font-size: clamp(14px, 3.9vw, 17px);
     line-height: 1.3;
-    margin-bottom: 0.28rem;
+    margin-bottom: 0.25rem;
   }
-  .divider { margin-bottom: 0.28rem; }
-  .hero-body {
-    font-size: 11.5px;
-    line-height: 1.45;
-    margin-bottom: 0.4rem;
+  .divider { margin-bottom: 0.25rem; }
+  .landing-live {
+    margin-bottom: 0.3rem;
   }
-  .landing-live { margin-bottom: 0.35rem; }
+  .traces-stream-wrap {
+    max-width: 100%;
+    width: 100%;
+    margin: 0.3rem 0 0.25rem;
+    padding: 0.15rem 0.2rem 0.2rem;
+  }
   .traces-stream-viewport {
-    height: 112px;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%);
+    height: 108px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 5%, #000 95%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 5%, #000 95%, transparent 100%);
   }
+  .traces-stream-viewport::after {
+    height: 78%;
+    max-height: 88px;
+    background: radial-gradient(ellipse at center, rgba(4, 6, 15, 0.64) 0%, rgba(4, 6, 15, 0.3) 48%, transparent 74%);
+  }
+  .traces-stream-static {
+    gap: 0;
+    justify-content: center;
+    min-height: 100%;
+  }
+  .passing-track {
+    padding: 0.15rem 0;
+    gap: var(--trace-gap, 64px);
+  }
+  .trace-item {
+    padding: 0.1rem 0.05rem;
+    max-width: 100%;
+  }
+  .trace-item-quote {
+    font-size: 13px;
+    line-height: 1.42;
+    margin-bottom: 0.18rem;
+    color: rgba(252, 248, 240, 0.94);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    text-shadow: 0 0 18px rgba(4,6,15,0.95), 0 1px 8px rgba(4,6,15,0.85);
+  }
+  .trace-item-alias {
+    font-size: 10px;
+    color: rgba(212, 184, 120, 0.72);
+    text-shadow: 0 0 14px rgba(4,6,15,0.9);
+  }
+  .traces-stream-empty {
+    padding: 0.35rem 0.4rem;
+    min-height: 0;
+  }
+  .traces-stream-empty h3 { font-size: 13px; margin-bottom: 0.2rem; }
   .traces-stream-empty p { display: none; }
+  .site-footer {
+    margin-top: 0.35rem;
+    padding-top: 0.6rem;
+    padding-bottom: calc(0.35rem + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .site-footer-links { gap: 3px 10px; margin-bottom: 4px; }
+  .site-footer-links button { font-size: 10px; }
+  .site-footer-copy { font-size: 9px; }
+  .install-prompt { margin-top: 0.3rem; }
 }
 
 @media (min-width: 701px) {
@@ -1625,9 +1696,9 @@ body.landing-paused .passing-track.is-rolling { animation-play-state: paused !im
 
     <div class="hero-actions" id="hero-actions">
       <button class="post-btn" id="open-modal-btn" onclick="openModal()">Leave Your Trace</button>
-      <button type="button" class="trace-status" id="trace-status" hidden onclick="openMyTraceOnMap()">&#10003; Your trace is on the wall</button>
       <button type="button" class="stat-btn stat-btn-secondary" id="listen-today-btn" onclick="openMap()">Listen to Today</button>
       <button type="button" class="stat-btn stat-btn-quiet" id="previous-days-btn" onclick="openArchive()">Previous Days</button>
+      <button type="button" class="trace-status" id="trace-status" hidden onclick="openMyTraceOnMap()">&#10003; Your trace is on the wall</button>
     </div>
 
     <div class="hero-quote">
@@ -3045,7 +3116,7 @@ function rebuildPassingTrack() {
       var halfHeight = track.scrollHeight / 2;
       if (!halfHeight) return;
       var vpHeight = viewport.clientHeight || 360;
-      var itemGap = isMobilePortrait() ? Math.round(vpHeight * 1.12) : Math.max(Math.round(vpHeight * 1.05), 140);
+      var itemGap = isMobilePortrait() ? Math.max(64, Math.round(vpHeight * 0.58)) : Math.max(Math.round(vpHeight * 1.05), 140);
       track.style.setProperty('--trace-gap', itemGap + 'px');
       var pxPerSec = isMobilePortrait() ? 2.8 : 3.5;
       var duration = Math.max(72, Math.min(280, halfHeight / pxPerSec));
