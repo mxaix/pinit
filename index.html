@@ -608,8 +608,6 @@ body.is-globe-dragging .info-modal-body * {
     margin: 0 0 0.4rem;
   }
 
-  #helix-canvas { opacity: 0.3; pointer-events: none !important; }
-
   .hero-actions {
     width: 100%;
     max-width: 100%;
@@ -675,6 +673,42 @@ body.is-globe-dragging .info-modal-body * {
 }
 
 @media (max-width: 700px) and (orientation: portrait) {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+    width: 100%;
+  }
+  body {
+    position: relative;
+    overflow-x: clip;
+  }
+  .header,
+  .header-inner,
+  .landing-main,
+  .traces-stream-wrap {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  #helix-canvas {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    max-width: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    inset: auto !important;
+    left: -9999px !important;
+    top: auto !important;
+  }
+  body.page-dimmed #helix-canvas {
+    display: none !important;
+    opacity: 0 !important;
+  }
   .header {
     padding: 0.6rem 0.85rem 0.5rem;
     padding-top: max(0.6rem, env(safe-area-inset-top));
@@ -774,10 +808,7 @@ body.is-globe-dragging .info-modal-body * {
   .mobile-voice-stage::before {
     content: '';
     position: absolute;
-    left: -6%;
-    right: -6%;
-    top: 0;
-    bottom: 0;
+    inset: 0;
     background: radial-gradient(ellipse at center, rgba(4, 6, 15, 0.55) 0%, rgba(4, 6, 15, 0.22) 55%, transparent 78%);
     pointer-events: none;
     z-index: 0;
@@ -841,7 +872,23 @@ body.is-globe-dragging .info-modal-body * {
 
 @media (max-width: 700px) and (orientation: landscape) {
   .mobile-globe-wrap { display: none !important; }
-  #helix-canvas { opacity: 0.82; pointer-events: auto !important; cursor: grab; }
+  #helix-canvas {
+    display: block !important;
+    visibility: visible !important;
+    position: fixed;
+    inset: 0;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    clip: auto !important;
+    clip-path: none !important;
+    opacity: 0.82;
+    pointer-events: auto !important;
+    cursor: grab;
+  }
   #helix-canvas.is-dragging { cursor: grabbing; }
 }
 
