@@ -6,9 +6,13 @@
 <title>Pinit — One human, one note, one day</title>
 <meta name="description" content="Leave one short note on the world wall each day. Country only — never your exact location. Browse today&#39;s map, moods, and the archive of what humanity was feeling.">
 <meta name="theme-color" content="#04060f">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pinit">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="canonical" href="https://www.pinitworld.com/">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Pinit">
 <meta property="og:title" content="Pinit — One human, one note, one day">
@@ -1183,6 +1187,57 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 }
 .site-footer-copy a:hover { color: var(--gold-light); }
 
+.install-prompt {
+  margin-top: 0.85rem;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(201,168,76,0.18);
+}
+.install-prompt[hidden] { display: none !important; }
+.install-prompt-text {
+  font-size: 11px;
+  line-height: 1.55;
+  color: rgba(220,225,240,0.62);
+  margin-bottom: 8px;
+}
+.install-prompt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+.install-prompt-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f5c49a;
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.28);
+  border-radius: 20px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.install-prompt-btn:hover {
+  background: rgba(201,168,76,0.2);
+  border-color: rgba(201,168,76,0.45);
+}
+.install-prompt-dismiss {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.install-prompt-dismiss:hover { color: rgba(255,255,255,0.55); }
+
 /* Info modal (About / Privacy / Rules) */
 .info-overlay {
   position: fixed; inset: 0;
@@ -1323,6 +1378,13 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
         <button type="button" onclick="openInfoModal('rules')">Rules</button>
       </nav>
       <p class="site-footer-copy">&copy; 2026 Pinit &middot; <a href="https://www.pinitworld.com">pinitworld.com</a></p>
+      <div class="install-prompt" id="install-prompt" hidden>
+        <p class="install-prompt-text" id="install-prompt-text"></p>
+        <div class="install-prompt-actions">
+          <button type="button" class="install-prompt-btn" id="install-prompt-action" hidden>Install app</button>
+          <button type="button" class="install-prompt-dismiss" id="install-prompt-dismiss">Dismiss</button>
+        </div>
+      </div>
     </footer>
   </div>
 </div>
@@ -3245,6 +3307,91 @@ init();
   tick();
 })();
 
+</script>
+
+<script>
+(function initPwa() {
+  var INSTALL_DISMISS_KEY = 'pinit_install_dismissed';
+  var deferredPrompt = null;
+
+  function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  function isIos() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+  }
+
+  function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    var host = location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') return;
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/service-worker.js').catch(function() {});
+    });
+  }
+
+  function hideInstallPrompt() {
+    var el = document.getElementById('install-prompt');
+    if (el) el.hidden = true;
+  }
+
+  function showInstallPrompt(message, showInstallBtn) {
+    if (localStorage.getItem(INSTALL_DISMISS_KEY)) return;
+    if (isStandalone()) return;
+    var el = document.getElementById('install-prompt');
+    var text = document.getElementById('install-prompt-text');
+    var btn = document.getElementById('install-prompt-action');
+    if (!el || !text) return;
+    text.textContent = message;
+    if (btn) btn.hidden = !showInstallBtn;
+    el.hidden = false;
+  }
+
+  function initInstallPrompt() {
+    if (isStandalone()) return;
+
+    var dismiss = document.getElementById('install-prompt-dismiss');
+    var action = document.getElementById('install-prompt-action');
+
+    if (dismiss) {
+      dismiss.addEventListener('click', function() {
+        localStorage.setItem(INSTALL_DISMISS_KEY, '1');
+        hideInstallPrompt();
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      showInstallPrompt('Install Pinit on your device for quick access.', true);
+    });
+
+    if (action) {
+      action.addEventListener('click', function() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.finally(function() {
+          deferredPrompt = null;
+          hideInstallPrompt();
+        });
+      });
+    }
+
+    if (isIos()) {
+      setTimeout(function() {
+        showInstallPrompt('Tap Share, then Add to Home Screen to install Pinit.', false);
+      }, 3000);
+    }
+  }
+
+  registerServiceWorker();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initInstallPrompt);
+  } else {
+    initInstallPrompt();
+  }
+})();
 </script>
 
 </body>

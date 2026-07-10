@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Pinit">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a1228"/>
+      <stop offset="100%" stop-color="#1a1020"/>
+    </linearGradient>
+    <linearGradient id="pin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ececec"/>
+      <stop offset="100%" stop-color="#888"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+  <g transform="translate(256 268) rotate(-4) translate(-176 -144)">
+    <rect x="0" y="0" width="352" height="288" rx="32" fill="#f5e6a8"/>
+    <circle cx="176" cy="-36" r="51" fill="url(#pin)"/>
+    <circle cx="167" cy="-50" r="16" fill="#fff" opacity="0.55"/>
+  </g>
+</svg>
