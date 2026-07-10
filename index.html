@@ -178,118 +178,150 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 }
 .how-step strong { color: rgba(245,240,232,0.92); font-weight: 500; }
 
-/* Privacy note */
-.privacy-note {
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
-  margin-bottom: 1rem;
-}
-.privacy-note p {
-  font-size: 11px;
-  color: rgba(255,255,255,0.38);
-  line-height: 1.6;
-  margin-bottom: 8px;
-}
-.privacy-list {
-  list-style: none;
-  display: flex; flex-direction: column; gap: 6px;
-}
-.privacy-list li {
-  font-size: 12px;
-  color: rgba(220,225,240,0.55);
-  line-height: 1.5;
-  padding-left: 16px;
-  position: relative;
-}
-.privacy-list li::before {
-  content: '';
-  position: absolute; left: 0; top: 7px;
-  width: 5px; height: 5px;
+/* Mobile portrait compact globe */
+.mobile-globe-wrap {
+  display: none;
+  width: 140px;
+  height: 140px;
+  margin: 0 0 0.75rem;
   border-radius: 50%;
-  background: rgba(201,168,76,0.5);
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  box-shadow: 0 0 40px rgba(68,136,255,0.15), 0 8px 24px rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.mobile-globe-wrap canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
-.sticky-wrap {
+/* Passing traces stream */
+.traces-stream-wrap {
   z-index: 2;
-  width: 220px;
-  pointer-events: none;
+  width: 248px;
+  pointer-events: auto;
 }
-.sticky-note {
-  width: 220px;
-  border-radius: 4px;
-  padding: 18px 16px 14px;
-  box-shadow: 6px 8px 28px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.15) inset;
+.traces-stream-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--gold);
+  margin-bottom: 0.65rem;
+  opacity: 0.85;
+}
+.traces-stream-viewport {
   position: relative;
-  opacity: 0;
-  transition: opacity 0.5s ease, transform 0.4s ease;
-  background: #fef08a;
-  min-height: 110px;
-  transform: rotate(1.2deg);
+  height: 360px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%);
 }
-.sticky-note.visible { opacity: 1; }
-.sticky-note::after {
+.traces-stream-viewport.is-paused .trace-card {
+  animation-play-state: paused;
+}
+.traces-stream-empty {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.25rem 1rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(201,168,76,0.22);
+}
+.traces-stream-empty.show { display: flex; }
+.traces-stream-empty-inner { max-width: 200px; }
+.traces-stream-empty h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-style: italic;
+  font-weight: 400;
+  color: #f5c49a;
+  margin-bottom: 0.5rem;
+  line-height: 1.35;
+}
+.traces-stream-empty p {
+  font-size: 12px;
+  color: rgba(220,225,240,0.5);
+  line-height: 1.55;
+}
+.traces-stream-static {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+.traces-stream-viewport.reduced-motion .traces-stream-static { display: flex; }
+.traces-stream-viewport.reduced-motion .trace-card-animated { display: none !important; }
+.trace-card {
+  border-radius: 5px;
+  padding: 13px 14px 11px;
+  box-shadow: 4px 6px 22px rgba(0,0,0,0.45);
+  position: relative;
+  width: 100%;
+  max-width: 248px;
+}
+.trace-card::after {
   content: '';
   position: absolute; inset: 0;
-  border-radius: 4px;
-  background: linear-gradient(145deg, rgba(255,255,255,0.12) 0%, transparent 45%);
+  border-radius: 5px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, transparent 50%);
   pointer-events: none;
 }
-.sticky-pin {
+.trace-card-animated {
   position: absolute;
-  top: -9px; left: 50%;
-  transform: translateX(-50%);
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #ececec, #8a8a8a);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.55);
-  z-index: 1;
+  left: 0;
+  right: 0;
+  will-change: transform, opacity;
+  animation: trace-rise 24s linear forwards;
 }
-.sticky-label {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: rgba(0,0,0,0.28);
-  margin-bottom: 8px;
-  font-weight: 500;
+@keyframes trace-rise {
+  0% { transform: translateY(105%); opacity: 0; }
+  7% { opacity: 1; }
+  90% { opacity: 0.92; }
+  100% { transform: translateY(-115%); opacity: 0; }
 }
-.sticky-text {
+.trace-card-text {
   font-family: 'Caveat', cursive;
-  font-size: 19px;
-  line-height: 1.5;
-  margin-bottom: 12px;
+  font-size: 18px;
+  line-height: 1.45;
+  margin-bottom: 10px;
   word-break: break-word;
-  color: #1a1612;
   display: -webkit-box;
-  -webkit-line-clamp: 7;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.sticky-text.empty-state {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 15px;
-  line-height: 1.55;
-  -webkit-line-clamp: unset;
-  display: block;
-  opacity: 0.75;
-}
-.sticky-footer {
+.trace-card-footer {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
   font-family: 'DM Sans', sans-serif;
   font-size: 10px;
-  border-top: 1px solid rgba(0,0,0,0.12);
+  border-top: 1px solid rgba(0,0,0,0.1);
   padding-top: 8px;
 }
-.sticky-alias { font-weight: 500; color: rgba(0,0,0,0.4); }
-.sticky-country { color: rgba(0,0,0,0.38); }
+.trace-card-alias { font-weight: 500; }
+.trace-card-country { opacity: 0.75; }
+.trace-card-mood {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.06);
+  margin-left: auto;
+}
 
 @media (min-width: 901px) {
-  .sticky-wrap {
+  .traces-stream-wrap {
     position: fixed;
-    right: clamp(1.5rem, 5vw, 3rem);
+    right: clamp(1.25rem, 4vw, 2.5rem);
     top: 50%;
     left: auto;
     transform: translateY(-50%);
@@ -298,15 +330,20 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 }
 
 @media (max-width: 900px) {
-  .sticky-wrap {
+  .traces-stream-wrap {
     position: relative;
     right: auto; top: auto;
     transform: none;
     width: 100%;
-    max-width: 280px;
-    margin: 0 0 1.5rem 0;
+    max-width: 300px;
+    margin: 0 0 1rem 0;
   }
-  .sticky-note { width: 100%; transform: rotate(0.5deg); }
+  .traces-stream-viewport { height: 200px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trace-card-animated { animation: none !important; display: none !important; }
+  .traces-stream-viewport { -webkit-mask-image: none; mask-image: none; }
 }
 
 @media (max-width: 700px) {
@@ -326,25 +363,29 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     flex-direction: column;
   }
 
-  .brand { margin-bottom: 0.75rem; }
+  .brand { margin-bottom: 0.75rem; order: 1; }
   .brand-tagline { margin-top: 3px; font-size: 10px; }
 
   .hero-quote {
+    order: 3;
     font-size: clamp(17px, 4.6vw, 20px);
     line-height: 1.35;
     margin-bottom: 0.45rem;
   }
   .divider {
+    order: 4;
     width: 32px;
     margin-bottom: 0.55rem;
   }
   .hero-body {
+    order: 5;
     font-size: 13px;
     line-height: 1.58;
     margin-bottom: 0.65rem;
   }
 
   .hero-stat {
+    order: 6;
     margin-bottom: 0.55rem;
     padding: 4px 10px;
     font-size: 11px;
@@ -352,6 +393,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .hero-stat strong { font-size: 13px; }
 
   .world-feeling {
+    order: 6;
     margin-bottom: 0.6rem;
     padding: 9px 11px;
   }
@@ -369,32 +411,31 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .world-feeling-single .world-feeling-main { font-size: 16px; }
   .world-feeling-single .world-feeling-sub { font-size: 10px; }
 
-  /* Buttons before sticky note on mobile */
+  .mobile-globe-wrap {
+    display: block;
+    order: 2;
+    width: 132px;
+    height: 132px;
+    margin: 0 0 0.6rem;
+  }
+
+  #helix-canvas { opacity: 0.3; }
+
+  /* Buttons before passing traces on mobile */
   .hero-actions {
     order: 7;
     width: 100%;
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.75rem;
     gap: 7px;
   }
-  .sticky-wrap {
+  .traces-stream-wrap {
     order: 8;
-    max-width: 188px;
-    margin: 0 0 0.75rem 0;
+    max-width: 100%;
+    margin: 0 0 0.65rem 0;
   }
-  .sticky-note {
-    padding: 11px 10px 9px;
-    min-height: 82px;
-  }
-  .sticky-pin { width: 11px; height: 11px; top: -7px; }
-  .sticky-label { margin-bottom: 4px; font-size: 8px; }
-  .sticky-text {
-    font-size: 15px;
-    line-height: 1.45;
-    margin-bottom: 7px;
-    -webkit-line-clamp: 5;
-  }
-  .sticky-text.empty-state { font-size: 12px; line-height: 1.45; }
-  .sticky-footer { padding-top: 6px; font-size: 9px; }
+  .traces-stream-viewport { height: 155px; }
+  .traces-stream-label { margin-bottom: 0.45rem; font-size: 9px; }
+  .trace-card-text { font-size: 15px; margin-bottom: 7px; -webkit-line-clamp: 4; }
 
   .section-block {
     order: 9;
@@ -405,7 +446,6 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .how-steps { gap: 7px; }
   .how-step { font-size: 12px; gap: 9px; }
   .how-step-num { width: 20px; height: 20px; font-size: 10px; }
-  .privacy-note { padding: 10px 11px; margin-bottom: 0; }
 
   .site-footer {
     order: 10;
@@ -1207,8 +1247,13 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 
 /* Make landing text readable over space bg */
 
-/* Video embed */
+/* Background globe canvas */
 #helix-canvas { position: fixed; inset: 0; width: 100% !important; height: 100% !important; z-index: 0; pointer-events: none; display: block; }
+
+@media (max-width: 700px) and (orientation: landscape) {
+  .mobile-globe-wrap { display: none !important; }
+  #helix-canvas { opacity: 1; }
+}
 </style>
 </head>
 <body>
@@ -1219,6 +1264,10 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     <div class="brand">
       <div class="brand-name">Pinit</div>
       <div class="brand-tagline">One human · One note · One day · One trace</div>
+    </div>
+
+    <div class="mobile-globe-wrap" id="mobile-globe-wrap" aria-hidden="true">
+      <canvas id="mobile-globe-canvas"></canvas>
     </div>
 
     <div class="hero-quote">&ldquo;Billions of people have walked this earth. Most left no trace. <em>This is your trace.</em>&rdquo;</div>
@@ -1236,17 +1285,18 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
       <div class="world-feeling-bars" id="world-feeling-bars"></div>
     </div>
 
-    <div class="sticky-wrap" id="sticky-wrap">
-      <div class="sticky-note" id="sticky-note">
-        <div class="sticky-pin"></div>
-        <div class="sticky-label" id="sticky-label">A voice from the wall</div>
-        <div class="sticky-text" id="sticky-text"></div>
-        <div class="sticky-footer" id="sticky-footer">
-          <span class="sticky-alias" id="sticky-alias"></span>
-          <span class="sticky-country" id="sticky-country"></span>
+    <aside class="traces-stream-wrap" id="traces-stream-wrap" aria-label="Passing traces from today&rsquo;s wall">
+      <div class="traces-stream-label">Passing traces</div>
+      <div class="traces-stream-viewport" id="traces-stream-viewport">
+        <div class="traces-stream-empty" id="traces-stream-empty">
+          <div class="traces-stream-empty-inner">
+            <h3>The wall awaits</h3>
+            <p>No traces yet today. Yours could be the first voice on the wall.</p>
+          </div>
         </div>
+        <div class="traces-stream-static" id="traces-stream-static"></div>
       </div>
-    </div>
+    </aside>
 
     <div class="hero-actions">
       <button class="post-btn" id="open-modal-btn" onclick="openModal()">Leave your Trace</button>
@@ -1263,18 +1313,6 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
         <li class="how-step"><span class="how-step-num">4</span><span><strong>At midnight UTC, today closes</strong> — the live wall resets for a new day.</span></li>
         <li class="how-step"><span class="how-step-num">5</span><span><strong>The day is saved in the archive</strong> — a record of what the world said.</span></li>
       </ol>
-    </div>
-
-    <div class="section-block">
-      <div class="privacy-note">
-        <p>Your trust matters.</p>
-        <ul class="privacy-list">
-          <li>We do not show your exact location</li>
-          <li>Only your country may appear</li>
-          <li>You may use an alias — your real name is never required</li>
-          <li>Public notes may remain visible in the archive</li>
-        </ul>
-      </div>
     </div>
 
     <footer class="site-footer">
@@ -1492,15 +1530,23 @@ var selectedMood = null;
 var hasPosted = false;
 var lastPostedNote = null;
 
+var TRACES_FETCH_LIMIT = 24;
+var tracesNotes = [];
+var traceNoteIndex = 0;
+var traceSpawnTimer = null;
+var traceStaticTimer = null;
+var landingNoteCount = 0;
+var landingPollTimer = null;
+var notesLiveChannel = null;
+var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 async function init() {
   scrollPanelToTop();
   renderColorPicker();
   renderMoodPicker();
   await detectLocation();
   await checkIfPosted();
-  loadNotes();
-  loadWorldFeeling();
-  setTimeout(loadStickyNotes, 1000);
+  initLandingLiveSync();
 }
 
 function scrollPanelToTop() {
@@ -1721,9 +1767,10 @@ async function moderate(text) {
 }
 
 async function loadNotes() {
-  var today = new Date().toISOString().slice(0, 10);
+  var today = todayISO();
   var { count, error } = await sb.from('notes').select('*', { count: 'exact', head: true }).eq('note_date', today);
   if (error) return;
+  landingNoteCount = count || 0;
   var statEl = document.getElementById('stat-notes');
   var heroStat = document.getElementById('hero-stat');
   if (statEl && count !== null) {
@@ -1830,9 +1877,9 @@ async function submitNote() {
     mood: selectedMood || null
   };
 
-  loadStickyNotes();
   loadNotes();
   loadWorldFeeling();
+  refreshTracesFromServer();
   showShareOverlay();
 }
 
@@ -2287,7 +2334,238 @@ function findMyNote() {
   }, 1400);
 }
 
-var realtimeChannel = null;
+function handleLiveNoteInsert(note) {
+  if (!note || note.note_date !== todayISO()) return;
+
+  var exists = tracesNotes.some(function(n) { return n.id === note.id; });
+  if (!exists) {
+    tracesNotes.unshift({
+      id: note.id,
+      content: note.content,
+      alias: note.alias,
+      country: note.country,
+      color: note.color,
+      mood: note.mood || null,
+      created_at: note.created_at
+    });
+    if (tracesNotes.length > TRACES_FETCH_LIMIT) tracesNotes.pop();
+    updateTracesEmptyState();
+    if (prefersReducedMotion) {
+      renderStaticTraces();
+    } else {
+      spawnTraceCard(note);
+    }
+    loadNotes();
+    loadWorldFeeling();
+  }
+
+  if (map && document.getElementById('map-overlay').classList.contains('open') && currentMapDate === todayISO()) {
+    addNoteToMap(note);
+    var noteCountEl = document.getElementById('map-note-count');
+    if (noteCountEl) {
+      var current = parseInt(noteCountEl.textContent.replace(/,/g, ''), 10) || 0;
+      noteCountEl.textContent = (current + 1).toLocaleString();
+    }
+    updateMapCountryCount();
+  }
+}
+
+function ensureNotesLiveSubscription() {
+  if (notesLiveChannel) return;
+  var today = todayISO();
+  notesLiveChannel = sb.channel('notes-live')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'notes',
+      filter: 'note_date=eq.' + today
+    }, function(payload) {
+      handleLiveNoteInsert(payload.new);
+    })
+    .subscribe();
+}
+
+async function fetchTodayTracesNotes() {
+  var today = todayISO();
+  var res = await sb.from('notes')
+    .select('id,content,alias,country,color,mood,created_at')
+    .eq('note_date', today)
+    .order('created_at', { ascending: false })
+    .limit(TRACES_FETCH_LIMIT);
+  return res.error ? [] : (res.data || []);
+}
+
+async function refreshTracesFromServer() {
+  tracesNotes = await fetchTodayTracesNotes();
+  traceNoteIndex = 0;
+  updateTracesEmptyState();
+  if (prefersReducedMotion) {
+    renderStaticTraces();
+  } else {
+    restartTracesStream();
+  }
+}
+
+async function pollLandingUpdates() {
+  var today = todayISO();
+  var countRes = await sb.from('notes').select('*', { count: 'exact', head: true }).eq('note_date', today);
+  if (countRes.error) return;
+
+  var remoteCount = countRes.count || 0;
+  if (remoteCount !== landingNoteCount) {
+    landingNoteCount = remoteCount;
+    var statEl = document.getElementById('stat-notes');
+    var heroStat = document.getElementById('hero-stat');
+    if (statEl) statEl.textContent = remoteCount.toLocaleString();
+    if (heroStat) heroStat.style.display = remoteCount > 0 ? 'inline-flex' : 'none';
+    await refreshTracesFromServer();
+    await loadWorldFeeling();
+    if (map && document.getElementById('map-overlay').classList.contains('open') && currentMapDate === today) {
+      loadMapNotes();
+    }
+  }
+}
+
+function initLandingLiveSync() {
+  var viewport = document.getElementById('traces-stream-viewport');
+  if (viewport) {
+    if (prefersReducedMotion) viewport.classList.add('reduced-motion');
+    viewport.addEventListener('mouseenter', function() { viewport.classList.add('is-paused'); });
+    viewport.addEventListener('mouseleave', function() { viewport.classList.remove('is-paused'); });
+    viewport.addEventListener('touchstart', function() { viewport.classList.add('is-paused'); }, { passive: true });
+    viewport.addEventListener('touchend', function() { viewport.classList.remove('is-paused'); }, { passive: true });
+  }
+
+  loadNotes();
+  loadWorldFeeling();
+  refreshTracesFromServer();
+  ensureNotesLiveSubscription();
+
+  if (!landingPollTimer) {
+    landingPollTimer = setInterval(pollLandingUpdates, 25000);
+  }
+}
+
+function updateTracesEmptyState() {
+  var empty = document.getElementById('traces-stream-empty');
+  if (!empty) return;
+  empty.classList.toggle('show', !tracesNotes.length);
+}
+
+function buildTraceCardElement(note, animated) {
+  var color = note.color || '#fef08a';
+  var light = isLightBg(color);
+  var tc = light ? '#1a1612' : '#f5f0e8';
+  var mc = light ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.5)';
+  var bc = light ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
+
+  var card = document.createElement('div');
+  card.className = 'trace-card' + (animated ? ' trace-card-animated' : '');
+
+  var text = document.createElement('div');
+  text.className = 'trace-card-text';
+  text.style.color = tc;
+  text.textContent = note.content || '';
+
+  var footer = document.createElement('div');
+  footer.className = 'trace-card-footer';
+  footer.style.borderTopColor = bc;
+
+  var alias = document.createElement('span');
+  alias.className = 'trace-card-alias';
+  alias.style.color = mc;
+  alias.textContent = note.alias || 'Anonymous';
+
+  var country = document.createElement('span');
+  country.className = 'trace-card-country';
+  country.style.color = mc;
+  country.textContent = note.country || '';
+
+  footer.appendChild(alias);
+  footer.appendChild(country);
+
+  if (note.mood) {
+    var mood = document.createElement('span');
+    mood.className = 'trace-card-mood';
+    mood.style.color = mc;
+    mood.textContent = moodLabel(note.mood);
+    footer.appendChild(mood);
+  }
+
+  card.style.background = color;
+  card.appendChild(text);
+  card.appendChild(footer);
+
+  if (animated) {
+    card.addEventListener('animationend', function() {
+      if (card.parentNode) card.parentNode.removeChild(card);
+    });
+  }
+
+  return card;
+}
+
+function getNextTraceNote() {
+  if (!tracesNotes.length) return null;
+  var note = tracesNotes[traceNoteIndex % tracesNotes.length];
+  traceNoteIndex++;
+  return note;
+}
+
+function spawnTraceCard(note) {
+  if (prefersReducedMotion || !tracesNotes.length) return;
+  var viewport = document.getElementById('traces-stream-viewport');
+  if (!viewport) return;
+
+  var data = note || getNextTraceNote();
+  if (!data) return;
+
+  var active = viewport.querySelectorAll('.trace-card-animated').length;
+  if (active >= 4) return;
+
+  viewport.appendChild(buildTraceCardElement(data, true));
+}
+
+function restartTracesStream() {
+  if (traceSpawnTimer) clearInterval(traceSpawnTimer);
+  var viewport = document.getElementById('traces-stream-viewport');
+  if (viewport) {
+    viewport.querySelectorAll('.trace-card-animated').forEach(function(el) { el.remove(); });
+  }
+  if (!tracesNotes.length || prefersReducedMotion) return;
+
+  spawnTraceCard();
+  traceSpawnTimer = setInterval(function() { spawnTraceCard(); }, 7000);
+}
+
+function renderStaticTraces() {
+  if (traceStaticTimer) clearInterval(traceStaticTimer);
+  var wrap = document.getElementById('traces-stream-static');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  if (!tracesNotes.length) return;
+
+  var shown = tracesNotes.slice(0, 3);
+  shown.forEach(function(note) {
+    wrap.appendChild(buildTraceCardElement(note, false));
+  });
+
+  if (tracesNotes.length <= 1) return;
+
+  var staticIndex = 0;
+  traceStaticTimer = setInterval(function() {
+    if (!tracesNotes.length) return;
+    staticIndex = (staticIndex + 1) % tracesNotes.length;
+    var note = tracesNotes[staticIndex];
+    wrap.innerHTML = '';
+    wrap.appendChild(buildTraceCardElement(note, false));
+    if (tracesNotes.length > 1) {
+      var next = tracesNotes[(staticIndex + 1) % tracesNotes.length];
+      wrap.appendChild(buildTraceCardElement(next, false));
+    }
+  }, 14000);
+}
 
 function initMap() {
   map = L.map('map', {
@@ -2309,40 +2587,17 @@ function initMap() {
 }
 
 function subscribeToNotes() {
-  // Unsubscribe from any existing channel first
-  if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+  ensureNotesLiveSubscription();
+}
 
-  var today = new Date().toISOString().slice(0, 10);
-
-  realtimeChannel = sb.channel('notes-live')
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'notes',
-      filter: `note_date=eq.${today}`
-    }, payload => {
-      var note = payload.new;
-      if (!note) return;
-      addNoteToMap(note);
-      // Update counters
-      var noteCountEl = document.getElementById('map-note-count');
-      if (noteCountEl) {
-        var current = parseInt(noteCountEl.textContent.replace(/,/g,'')) || 0;
-        noteCountEl.textContent = (current + 1).toLocaleString();
-      }
-      // Refresh live note panel
-          loadStickyNotes();
-          loadWorldFeeling();
-      // Update landing stat too
-      var statEl = document.getElementById('stat-notes');
-      if (statEl) {
-        var current = parseInt(statEl.textContent.replace(/,/g,'')) || 0;
-        statEl.textContent = (current + 1).toLocaleString();
-        var heroStat = document.getElementById('hero-stat');
-        if (heroStat) heroStat.style.display = 'inline-flex';
-      }
-    })
-    .subscribe();
+function updateMapCountryCount() {
+  if (!map) return;
+  var countries = new Set();
+  map.eachLayer(function(layer) {
+    if (layer._noteCountry) countries.add(layer._noteCountry);
+  });
+  var el = document.getElementById('map-country-count');
+  if (el) el.textContent = countries.size.toLocaleString();
 }
 
 function addNoteToMap(note) {
@@ -2526,86 +2781,6 @@ function isLightColor(hex) {
   return (r*299 + g*587 + b*114) / 1000 > 128;
 }
 
-
-
-
-// ── Sticky note on landing ────────────────────────────────
-var stickyNotes = [];
-var stickyTimer = null;
-
-function showEmptySticky() {
-  var el   = document.getElementById('sticky-note');
-  var txt  = document.getElementById('sticky-text');
-  var label = document.getElementById('sticky-label');
-  var ali  = document.getElementById('sticky-alias');
-  var cnt  = document.getElementById('sticky-country');
-  var ftr  = document.getElementById('sticky-footer');
-  if (!el || !txt) return;
-
-  el.style.background = '#f5e6a8';
-  if (label) label.textContent = 'The wall awaits';
-  txt.textContent = 'No traces yet today. Yours could be the first voice on the wall.';
-  txt.classList.add('empty-state');
-  if (ali) ali.textContent = '';
-  if (cnt) cnt.textContent = '';
-  if (ftr) ftr.style.visibility = 'hidden';
-  el.classList.add('visible');
-}
-
-async function loadStickyNotes() {
-  var today = new Date().toISOString().slice(0, 10);
-  var res = await sb.from('notes').select('content,alias,country,color').eq('note_date', today).limit(50);
-  if (!res.data || !res.data.length) {
-    res = await sb.from('notes').select('content,alias,country,color').order('created_at',{ascending:false}).limit(50);
-  }
-  if (!res.data || !res.data.length) {
-    showEmptySticky();
-    return;
-  }
-  stickyNotes = res.data;
-
-  // Show immediately
-  renderSticky(stickyNotes[Math.floor(Math.random()*stickyNotes.length)]);
-
-  if (stickyTimer) clearInterval(stickyTimer);
-  stickyTimer = setInterval(function(){
-    var note = stickyNotes[Math.floor(Math.random()*stickyNotes.length)];
-    var el = document.getElementById('sticky-note');
-    if (!el) return;
-    el.style.transition = 'opacity 0.5s, transform 0.4s';
-    el.style.opacity = '0';
-    setTimeout(function(){ renderSticky(note); el.style.opacity = '1'; }, 550);
-  }, 10000);
-}
-
-function renderSticky(note) {
-  var el   = document.getElementById('sticky-note');
-  var txt  = document.getElementById('sticky-text');
-  var label = document.getElementById('sticky-label');
-  var ali  = document.getElementById('sticky-alias');
-  var cnt  = document.getElementById('sticky-country');
-  var ftr  = document.getElementById('sticky-footer');
-  if (!el || !txt) return;
-
-  txt.classList.remove('empty-state');
-  if (label) label.textContent = 'A voice from the wall';
-  if (ftr) ftr.style.visibility = 'visible';
-
-  var color = note.color || '#fef08a';
-  var light = isLightBg(color);
-  var tc = light ? '#1a1612' : '#f5f0e8';
-  var mc = light ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.5)';
-  var bc = light ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.15)';
-
-  el.style.background = color;
-  txt.textContent = note.content || '';
-  txt.style.color = tc;
-  if (ali) { ali.textContent = note.alias || ''; ali.style.color = mc; }
-  if (cnt) { cnt.textContent = note.country || ''; cnt.style.color = mc; }
-  if (ftr) ftr.style.borderTopColor = bc;
-
-  el.classList.add('visible');
-}
 
 
 
@@ -2951,15 +3126,80 @@ init();
   scene.add(fillLight);
 
   // ── Animation ─────────────────────────────────────────────
+  var motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function animate(){
     requestAnimationFrame(animate);
-    earth.rotation.y  += 0.00055;
-    clouds.rotation.y += 0.00068;
+    if (!motionReduced) {
+      earth.rotation.y  += 0.00055;
+      clouds.rotation.y += 0.00068;
+    }
     renderer.render(scene, camera);
   }
   animate();
 
 })();
+</script>
+
+<script>
+(function(){
+  var canvas = document.getElementById('mobile-globe-canvas');
+  var wrap = document.getElementById('mobile-globe-wrap');
+  if (!canvas || !wrap || typeof THREE === 'undefined') return;
+
+  var size = 140;
+  var motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function isMobilePortrait() {
+    return window.innerWidth <= 700 && window.matchMedia('(orientation: portrait)').matches;
+  }
+
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(size, size, false);
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  camera.position.set(0, 0.05, 2.35);
+
+  var loader = new THREE.TextureLoader();
+  loader.crossOrigin = 'anonymous';
+  var earthTexUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.37.1/example/img/earth-blue-marble.jpg';
+  var cloudsTexUrl = 'https://cdn.jsdelivr.net/npm/three-globe@2.37.1/example/img/earth-clouds.png';
+
+  var earthGeo = new THREE.SphereGeometry(0.72, 32, 32);
+  var earthMat = new THREE.MeshPhongMaterial({ shininess: 6 });
+  var earth = new THREE.Mesh(earthGeo, earthMat);
+  scene.add(earth);
+
+  var cloudGeo = new THREE.SphereGeometry(0.735, 32, 32);
+  var cloudMat = new THREE.MeshPhongMaterial({ transparent: true, opacity: 0.32, depthWrite: false });
+  var clouds = new THREE.Mesh(cloudGeo, cloudMat);
+  scene.add(clouds);
+
+  var atmGeo = new THREE.SphereGeometry(0.76, 32, 32);
+  var atmMat = new THREE.MeshPhongMaterial({ color: 0x4488ff, transparent: true, opacity: 0.06, side: THREE.FrontSide });
+  scene.add(new THREE.Mesh(atmGeo, atmMat));
+
+  loader.load(earthTexUrl, function(t) { earthMat.map = t; earthMat.needsUpdate = true; });
+  loader.load(cloudsTexUrl, function(t) { cloudMat.map = t; cloudMat.needsUpdate = true; });
+
+  scene.add(new THREE.AmbientLight(0x334466, 0.55));
+  var sun = new THREE.DirectionalLight(0xfff0d8, 1.1);
+  sun.position.set(3, 2, 4);
+  scene.add(sun);
+
+  function tick() {
+    requestAnimationFrame(tick);
+    if (!isMobilePortrait()) return;
+    if (!motionReduced) {
+      earth.rotation.y += 0.0032;
+      clouds.rotation.y += 0.004;
+    }
+    renderer.render(scene, camera);
+  }
+  tick();
+})();
+
 </script>
 
 </body>
