@@ -48,6 +48,53 @@ html { scroll-behavior: smooth; }
 html, body { height: 100%; }
 body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
+/* Landing shell — prevent accidental text selection while exploring */
+.header,
+.landing-main,
+.traces-stream-wrap,
+.writing-prelude,
+#helix-canvas,
+.mobile-globe-wrap {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.trace-item {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+body.is-globe-dragging,
+body.is-globe-dragging * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  cursor: grabbing;
+}
+body.is-globe-dragging input,
+body.is-globe-dragging textarea,
+body.is-globe-dragging .info-modal-body,
+body.is-globe-dragging .info-modal-body * {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  cursor: auto;
+}
+/* Editable / copy-friendly surfaces */
+.overlay,
+.overlay input,
+.overlay textarea,
+.info-overlay,
+.info-modal-body,
+.info-modal-body *,
+.map-overlay .leaflet-popup-content,
+.map-overlay .leaflet-popup-content *,
+.archive-overlay,
+.archive-overlay input,
+.archive-overlay textarea,
+.share-overlay,
+.share-overlay textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* Header / landing panel — one-screen desktop */
 .header {
   position: fixed; top: 0; left: 0;
@@ -184,7 +231,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 .trace-status:hover { color: rgba(232,213,160,0.88); }
 .trace-status[hidden] { display: none !important; }
 .hero-actions.has-posted #open-modal-btn { display: none; }
-.hero-actions.has-posted .trace-status { display: block; }
+.hero-actions.has-posted .trace-status { display: block; margin-bottom: 10px; }
 
 .live-day {
   display: flex;
@@ -296,6 +343,25 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 8%, #000 24%, #000 76%, rgba(0,0,0,0.4) 92%, transparent 100%);
   mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.4) 8%, #000 24%, #000 76%, rgba(0,0,0,0.4) 92%, transparent 100%);
 }
+.traces-stream-viewport::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 118%;
+  height: 44%;
+  max-height: 190px;
+  background: radial-gradient(ellipse at center, rgba(4, 6, 15, 0.58) 0%, rgba(4, 6, 15, 0.32) 42%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.traces-stream-viewport .passing-track,
+.traces-stream-viewport .traces-stream-static,
+.traces-stream-viewport .traces-stream-empty {
+  position: relative;
+  z-index: 1;
+}
 .traces-stream-viewport.is-paused .passing-track.is-rolling {
   animation-play-state: paused;
 }
@@ -402,21 +468,24 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .header {
     width: 48%;
     max-width: 580px;
-    padding: clamp(1.35rem, 4vh, 2.5rem) 2rem max(0.65rem, env(safe-area-inset-bottom)) 1.9rem;
+    padding: clamp(1.75rem, calc(4vh + 18px), 2.9rem) 2rem max(0.65rem, env(safe-area-inset-bottom)) 1.9rem;
     flex-direction: column;
     overflow-y: auto;
     overflow-x: hidden;
   }
+  .landing-main {
+    padding-top: 20px;
+  }
   .header-inner {
-    max-width: 480px;
+    max-width: 500px;
     height: auto;
-    min-height: min(100%, calc(100dvh - clamp(1.35rem, 4vh, 2.5rem) - max(0.65rem, env(safe-area-inset-bottom))));
+    min-height: min(100%, calc(100dvh - clamp(1.75rem, calc(4vh + 18px), 2.9rem) - max(0.65rem, env(safe-area-inset-bottom))));
     flex: 1 1 auto;
     overflow-y: visible;
   }
-  .brand-name { font-size: 14px; }
+  .brand-name { font-size: 15px; }
   .hero-quote {
-    font-size: clamp(18px, 2.35vw, 26px);
+    font-size: clamp(18.5px, 2.45vw, 27px);
     margin-bottom: 0.45rem;
   }
   .post-btn {
@@ -425,9 +494,9 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     font-size: 14px;
     padding: 11px 26px;
   }
-  .hero-actions { max-width: 300px; gap: 8px; }
+  .hero-actions { max-width: 310px; gap: 8px; }
   .live-day-voices,
-  .live-day-feeling { font-size: 12px; }
+  .live-day-feeling { font-size: 12.5px; }
   .live-day-date { font-size: 10px; }
   .site-footer {
     margin-top: auto;
@@ -449,6 +518,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 
 @media (min-width: 901px) and (max-height: 800px) {
   .header { padding: 0.7rem 1.45rem; }
+  .landing-main { padding-top: 6px; }
   .brand { margin-bottom: 0.4rem; }
   .hero-quote {
     font-size: clamp(16px, 2vw, 21px);
@@ -1492,6 +1562,8 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   display: block;
   opacity: 0.82;
   transition: opacity 0.4s ease;
+  -webkit-user-select: none;
+  user-select: none;
 }
 #helix-canvas:focus-visible {
   outline: 2px solid rgba(201,168,76,0.45);
@@ -2898,8 +2970,16 @@ function bindTraceItemClick(el, note) {
   el.setAttribute('role', 'button');
   el.setAttribute('tabindex', '0');
   el.setAttribute('aria-label', 'Open this trace on the map');
+  el.addEventListener('mousedown', function(e) { e.preventDefault(); });
+  el.addEventListener('pointerdown', function(e) {
+    if (e.pointerType === 'mouse') e.preventDefault();
+  });
   el.addEventListener('click', function(e) {
+    e.preventDefault();
     e.stopPropagation();
+    if (window.getSelection && window.getSelection().removeAllRanges) {
+      window.getSelection().removeAllRanges();
+    }
     focusTraceOnMap(note);
   });
   el.addEventListener('keydown', function(e) {
@@ -3662,8 +3742,19 @@ init();
     }
   }
 
+  function clearBrowserSelection() {
+    var sel = window.getSelection && window.getSelection();
+    if (sel && sel.removeAllRanges) sel.removeAllRanges();
+  }
+
+  function endGlobeDragState() {
+    document.body.classList.remove('is-globe-dragging');
+  }
+
   canvas.addEventListener('pointerdown', function(e) {
     if (!desktopGlobeActive()) return;
+    clearBrowserSelection();
+    document.body.classList.add('is-globe-dragging');
     isDragging = true;
     activePointer = e.pointerId;
     lastPointerX = e.clientX;
@@ -3671,11 +3762,13 @@ init();
     spinVelocity = 0;
     canvas.classList.add('is-dragging');
     markGlobeInteract();
+    if (e.cancelable) e.preventDefault();
     try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
   });
 
   canvas.addEventListener('pointermove', function(e) {
     if (!isDragging || e.pointerId !== activePointer) return;
+    if (e.cancelable) e.preventDefault();
     var dx = e.clientX - lastPointerX;
     dragDistance += Math.abs(dx);
     lastPointerX = e.clientX;
@@ -3691,6 +3784,7 @@ init();
     isDragging = false;
     activePointer = null;
     canvas.classList.remove('is-dragging');
+    endGlobeDragState();
     if (e) {
       try { canvas.releasePointerCapture(e.pointerId); } catch (err) {}
       if (wasTap) openGlobeMap(e.clientX, e.clientY);
@@ -3830,8 +3924,15 @@ init();
     }
   }
 
+  function clearBrowserSelection() {
+    var sel = window.getSelection && window.getSelection();
+    if (sel && sel.removeAllRanges) sel.removeAllRanges();
+  }
+
   function onPointerDown(e) {
     if (!isMobilePortraitGlobe()) return;
+    clearBrowserSelection();
+    document.body.classList.add('is-globe-dragging');
     isDragging = true;
     activePointer = e.pointerId;
     lastPointerX = e.clientX;
@@ -3839,6 +3940,7 @@ init();
     spinVelocity = 0;
     wrap.classList.add('is-dragging');
     markGlobeInteract();
+    if (e.cancelable) e.preventDefault();
     try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
   }
 
@@ -3860,6 +3962,7 @@ init();
     isDragging = false;
     activePointer = null;
     wrap.classList.remove('is-dragging');
+    document.body.classList.remove('is-globe-dragging');
     if (e) {
       try { wrap.releasePointerCapture(e.pointerId); } catch (err) {}
       if (wasTap) openGlobeMap(e.clientX, e.clientY);
