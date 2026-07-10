@@ -1167,20 +1167,105 @@ body.is-globe-dragging .info-modal-body * {
 
 /* Map overlay */
 .map-overlay { position: fixed; inset: 0; background: #f5f0e8; z-index: 500; display: none; flex-direction: column; }
-#map { position: relative; }
+#map { position: relative; flex: 1; width: 100%; min-height: 0; min-width: 0; }
 .map-overlay.open { display: flex; }
-.map-topbar { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 600; display: flex; align-items: center; gap: 4px; background: rgba(44,37,32,0.88); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); border-radius: 40px; padding: 6px 10px; box-shadow: 0 2px 16px rgba(0,0,0,0.25); white-space: nowrap; flex-wrap: nowrap; }
+.map-ui-top {
+  position: absolute;
+  z-index: 600;
+  pointer-events: none;
+}
+.map-ui-top > * { pointer-events: auto; }
+.map-topbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+}
 .map-title { display: none; }
-.map-close { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 13px; padding: 4px 10px; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
-.map-close:hover { color: #fff; background: rgba(255,255,255,0.1); }
-#map { flex: 1; width: 100%; }
+.map-nav-btn,
+.map-close-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1;
+}
+.map-nav-btn:hover,
+.map-close-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+.map-date-label {
+  font-size: 12px;
+  color: #f5c49a;
+  min-width: 90px;
+  text-align: center;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+}
+.map-find-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #f5c49a;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.map-find-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.map-find-btn[hidden] { display: none !important; }
+.map-close-inbar { display: none; }
+.map-close-detached {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 600;
+  background: rgba(250,247,242,0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(44,37,32,0.1);
+  transition: color 0.2s;
+}
+.map-close-detached:hover { color: var(--terra); }
 .leaflet-container { background: #e8e0d4 !important; }
 
 /* Map counters */
-.map-counters { position: absolute; bottom: 2rem; left: 1.5rem; z-index: 600; display: flex; flex-direction: column; gap: 8px; }
+.map-counters {
+  position: absolute;
+  bottom: 2rem;
+  left: 1.5rem;
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.map-counters-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .map-counter { background: rgba(44,37,32,0.82); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 14px; }
 .map-counter-n { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 400; color: #f5c49a; line-height: 1; }
 .map-counter-l { font-size: 10px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 3px; }
+.map-stats-pill { display: none; }
 
 /* Map dot */
 @keyframes dotPulse {
@@ -1322,11 +1407,135 @@ body.is-globe-dragging .info-modal-body * {
 .leaflet-popup-content { margin: 0 !important; }
 .leaflet-popup-tip-container { display: none; }
 
+@media (min-width: 701px) {
+  .map-ui-top {
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 4px 8px;
+    background: rgba(44,37,32,0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 40px;
+    padding: 6px 10px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+    max-width: calc(100% - 56px);
+  }
+  .map-topbar { display: contents; }
+  .map-find-btn:not([hidden]) { display: inline-flex; }
+}
+
 @media (max-width: 700px) {
-  .map-counters { bottom: 1rem; left: 1rem; }
-  .map-counter { padding: 6px 11px; }
-  .map-counter-n { font-size: 18px; }
-  .map-topbar { max-width: calc(100% - 56px); }
+  .map-overlay {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+  .map-ui-top {
+    top: max(8px, env(safe-area-inset-top));
+    left: max(10px, env(safe-area-inset-left));
+    right: max(10px, env(safe-area-inset-right));
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .map-topbar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    justify-content: space-between;
+    gap: 2px;
+    padding: 4px 6px;
+    border-radius: 22px;
+    background: rgba(44,37,32,0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .map-date-label {
+    min-width: 0;
+    flex: 1 1 auto;
+    font-size: 11px;
+    padding: 0 4px;
+  }
+  .map-nav-btn,
+  .map-close-inbar {
+    flex: 0 0 auto;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+  }
+  .map-close-inbar { display: inline-flex; }
+  .map-close-detached { display: none !important; }
+  .map-find-btn:not([hidden]) {
+    display: inline-flex;
+    align-self: flex-start;
+    font-size: 11px;
+    padding: 7px 12px;
+    min-height: 36px;
+    border-radius: 18px;
+    background: rgba(44,37,32,0.78);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(245,196,154,0.88);
+  }
+  .map-counters {
+    bottom: calc(env(safe-area-inset-bottom) + 2.6rem);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    align-items: center;
+  }
+  .map-counters-cards { display: none !important; }
+  .map-stats-pill {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(44,37,32,0.84);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 11px;
+    line-height: 1.35;
+    color: rgba(245,196,154,0.92);
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+  }
+  .map-overlay .leaflet-control-attribution {
+    font-size: 9px !important;
+    line-height: 1.3 !important;
+    padding: 2px 6px !important;
+    max-width: calc(100vw - 16px);
+    white-space: normal;
+  }
+  .map-overlay .leaflet-bottom.leaflet-right {
+    bottom: calc(env(safe-area-inset-bottom) + 6px) !important;
+    right: max(6px, env(safe-area-inset-right)) !important;
+  }
+  .map-overlay .leaflet-bottom.leaflet-left {
+    bottom: calc(env(safe-area-inset-bottom) + 6px) !important;
+    left: max(6px, env(safe-area-inset-left)) !important;
+  }
+  .map-overlay .leaflet-control-zoom {
+    margin-bottom: calc(env(safe-area-inset-bottom) + 6px) !important;
+    margin-right: max(6px, env(safe-area-inset-right)) !important;
+  }
+  .map-overlay .leaflet-control-zoom a {
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 30px !important;
+    font-size: 16px !important;
+  }
 }
 
 /* Archive overlay */
@@ -1902,20 +2111,23 @@ body.landing-paused .passing-track.is-rolling { animation-play-state: paused !im
 
 <!-- Map Overlay -->
 <div class="map-overlay" id="map-overlay">
-  <div class="map-topbar">
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-      <button class="map-close" id="map-prev-btn" onclick="changeMapDate(-1)" style="padding:5px 10px;">&#8592;</button>
-      <span id="map-date-label" style="font-size:12px;color:#f5c49a;min-width:90px;text-align:center;font-weight:500;"></span>
-      <button class="map-close" id="map-next-btn" onclick="changeMapDate(1)" style="padding:5px 10px;">&#8594;</button>
-      <button class="map-close" id="find-my-note-btn" onclick="findMyNote()" style="display:none;border:1px solid rgba(255,255,255,0.3);color:#f5c49a;">&#9675; Find my note</button>
-
+  <div class="map-ui-top">
+    <div class="map-topbar">
+      <button type="button" class="map-nav-btn" id="map-prev-btn" onclick="changeMapDate(-1)" aria-label="Previous day">&#8592;</button>
+      <span class="map-date-label" id="map-date-label"></span>
+      <button type="button" class="map-nav-btn" id="map-next-btn" onclick="changeMapDate(1)" aria-label="Next day">&#8594;</button>
+      <button type="button" class="map-close-btn map-close-inbar" onclick="closeMap()" aria-label="Close map">&times;</button>
     </div>
+    <button type="button" class="map-find-btn" id="find-my-note-btn" onclick="findMyNote()" hidden>Find my note</button>
   </div>
+  <button type="button" class="map-close-detached" onclick="closeMap()" aria-label="Close map">&times;</button>
   <div class="map-counters">
-    <div class="map-counter"><div class="map-counter-n" id="map-note-count">—</div><div class="map-counter-l">Notes today</div></div>
-    <div class="map-counter"><div class="map-counter-n" id="map-country-count">—</div><div class="map-counter-l">Countries</div></div>
+    <div class="map-counters-cards">
+      <div class="map-counter"><div class="map-counter-n" id="map-note-count">—</div><div class="map-counter-l">Notes today</div></div>
+      <div class="map-counter"><div class="map-counter-n" id="map-country-count">—</div><div class="map-counter-l">Countries</div></div>
+    </div>
+    <div class="map-stats-pill" id="map-stats-pill" aria-live="polite">—</div>
   </div>
-  <button onclick="closeMap()"  style="position:absolute;top:12px;right:12px;z-index:600;background:rgba(250,247,242,0.92);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:50%;width:36px;height:36px;font-size:18px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(44,37,32,0.1);" onmouseover="this.style.color='var(--terra)'" onmouseout="this.style.color='var(--muted)'">&times;</button>
   <div class="map-empty" id="map-empty">
     <div class="map-empty-inner">
       <h3 id="map-empty-title">The wall is quiet</h3>
@@ -3083,7 +3295,7 @@ function handleLiveNoteInsert(note) {
     var noteCountEl = document.getElementById('map-note-count');
     if (noteCountEl) {
       var current = parseInt(noteCountEl.textContent.replace(/,/g, ''), 10) || 0;
-      noteCountEl.textContent = (current + 1).toLocaleString();
+      updateMapStatsDisplay(current + 1, undefined);
     }
     updateMapCountryCount();
   }
@@ -3459,14 +3671,38 @@ function subscribeToNotes() {
   ensureNotesLiveSubscription();
 }
 
+function formatMapStatsLine(noteCount, countryCount) {
+  var notes = Number(noteCount) || 0;
+  var countries = Number(countryCount) || 0;
+  var noteWord = notes === 1 ? 'note' : 'notes';
+  var countryWord = countries === 1 ? 'country' : 'countries';
+  return notes.toLocaleString() + ' ' + noteWord + ' \u00b7 ' + countries.toLocaleString() + ' ' + countryWord;
+}
+
+function updateMapStatsDisplay(noteCount, countryCount) {
+  var noteCountEl = document.getElementById('map-note-count');
+  var countryCountEl = document.getElementById('map-country-count');
+  var pill = document.getElementById('map-stats-pill');
+  var notes = (noteCount != null && !isNaN(Number(noteCount)))
+    ? Number(noteCount)
+    : (noteCountEl ? parseInt(noteCountEl.textContent.replace(/,/g, ''), 10) || 0 : 0);
+  var countries = (countryCount != null && !isNaN(Number(countryCount)))
+    ? Number(countryCount)
+    : (countryCountEl ? parseInt(countryCountEl.textContent.replace(/,/g, ''), 10) || 0 : 0);
+  if (noteCountEl) noteCountEl.textContent = notes.toLocaleString();
+  if (countryCountEl) countryCountEl.textContent = countries.toLocaleString();
+  if (pill) pill.textContent = formatMapStatsLine(notes, countries);
+}
+
 function updateMapCountryCount() {
   if (!map) return;
   var countries = new Set();
   map.eachLayer(function(layer) {
     if (layer._noteCountry) countries.add(layer._noteCountry);
   });
-  var el = document.getElementById('map-country-count');
-  if (el) el.textContent = countries.size.toLocaleString();
+  var noteCountEl = document.getElementById('map-note-count');
+  var noteCount = noteCountEl ? parseInt(noteCountEl.textContent.replace(/,/g, ''), 10) || 0 : 0;
+  updateMapStatsDisplay(noteCount, countries.size);
 }
 
 function addNoteToMap(note) {
@@ -3512,10 +3748,7 @@ async function loadMapNotes() {
   mapNotes = data;
 
   var countries = new Set(data.map(n => n.country).filter(Boolean));
-  var noteCountEl = document.getElementById('map-note-count');
-  var countryCountEl = document.getElementById('map-country-count');
-  if (noteCountEl) noteCountEl.textContent = data.length.toLocaleString();
-  if (countryCountEl) countryCountEl.textContent = countries.size;
+  updateMapStatsDisplay(data.length, countries.size);
 
   var mapEmpty = document.getElementById('map-empty');
   var mapEmptyTitle = document.getElementById('map-empty-title');
