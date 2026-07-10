@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Pinit — One human, one note, one day</title>
+<title>Pinit — One Trace a Day</title>
 <meta name="description" content="Leave one short note on the world wall each day. Country only — never your exact location. Browse today&#39;s map, moods, and the archive of what humanity was feeling.">
 <meta name="theme-color" content="#04060f">
 <link rel="manifest" href="/manifest.json">
@@ -54,16 +54,28 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   width: 44%; max-width: 520px; min-width: 300px;
   height: 100vh;
   display: flex; align-items: flex-start; justify-content: flex-start;
-  padding: 2rem 2.25rem;
+  padding: 1.5rem 2rem;
   z-index: 2; text-align: left;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.15) transparent;
+  scrollbar-color: transparent transparent;
+}
+.header:hover {
+  scrollbar-color: rgba(255,255,255,0.14) transparent;
+}
+.header::-webkit-scrollbar { width: 4px; }
+.header::-webkit-scrollbar-track { background: transparent; }
+.header::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+}
+.header:hover::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.14);
 }
 .header-inner { width: 100%; max-width: 420px; }
 
-.brand { margin-bottom: 1.75rem; }
+.brand { margin-bottom: 1rem; }
 .brand-name {
   font-family: 'DM Sans', sans-serif;
   font-size: 13px; font-weight: 500;
@@ -80,19 +92,19 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 
 .hero-quote {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(22px, 2.8vw, 30px);
+  font-size: clamp(20px, 2.5vw, 28px);
   font-style: italic; font-weight: 400;
   color: #f5c49a;
-  line-height: 1.45;
-  margin: 0 0 1rem;
+  line-height: 1.4;
+  margin: 0 0 0.65rem;
 }
 .hero-quote em { font-style: italic; color: #ffddb8; }
 
 .hero-body {
-  font-size: 14px;
+  font-size: 13px;
   color: rgba(220,225,240,0.72);
-  line-height: 1.85;
-  margin: 0 0 1.5rem;
+  line-height: 1.65;
+  margin: 0 0 0.85rem;
   font-weight: 300;
 }
 
@@ -102,7 +114,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   gap: 8px;
   font-size: 12px;
   color: rgba(255,255,255,0.45);
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
   padding: 6px 12px;
   border-radius: 20px;
   background: rgba(255,255,255,0.04);
@@ -118,20 +130,20 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 .divider {
   width: 48px; height: 1px;
   background: linear-gradient(90deg, rgba(201,168,76,0.6), transparent);
-  margin: 0 0 1.25rem 0;
+  margin: 0 0 0.65rem 0;
 }
 
 .hero-actions {
   display: flex; flex-direction: column;
-  align-items: flex-start; gap: 10px;
-  margin-bottom: 2rem;
+  align-items: flex-start; gap: 8px;
+  margin-bottom: 0.9rem;
 }
 
 .post-btn {
   background: linear-gradient(135deg, #d4824a, #b35e38);
-  color: #fff; font-size: 15px; font-weight: 500;
+  color: #fff; font-size: 14px; font-weight: 500;
   border: 1.5px solid rgba(255,255,255,0.2);
-  padding: 14px 36px; border-radius: 50px;
+  padding: 12px 28px; border-radius: 50px;
   cursor: pointer; transition: all 0.25s;
   white-space: nowrap; letter-spacing: 0.08em;
   box-shadow: 0 4px 24px rgba(196,113,74,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
@@ -204,8 +216,25 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 /* Passing traces stream */
 .traces-stream-wrap {
   z-index: 2;
-  width: 248px;
+  width: 252px;
   pointer-events: auto;
+  position: relative;
+  padding: 0.85rem 1rem 1rem;
+}
+.traces-stream-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0 -0.5rem;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 6, 15, 0.2) 0%,
+    rgba(4, 6, 15, 0.62) 22%,
+    rgba(4, 6, 15, 0.72) 50%,
+    rgba(4, 6, 15, 0.62) 78%,
+    rgba(4, 6, 15, 0.2) 100%
+  );
+  pointer-events: none;
 }
 .traces-stream-label {
   font-size: 10px;
@@ -213,15 +242,17 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: var(--gold);
-  margin-bottom: 0.65rem;
-  opacity: 0.85;
+  margin-bottom: 0.6rem;
+  opacity: 0.9;
+  padding-left: 0.1rem;
 }
 .traces-stream-viewport {
   position: relative;
   height: 360px;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+  width: 100%;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 4%, #000 96%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 4%, #000 96%, transparent 100%);
 }
 .traces-stream-viewport.is-paused .passing-track.is-rolling {
   animation-play-state: paused;
@@ -278,9 +309,9 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 }
 .trace-item {
   width: 100%;
-  max-width: 248px;
+  max-width: 232px;
   flex-shrink: 0;
-  padding: 0.25rem 0.15rem;
+  padding: 0.3rem 0.1rem;
   margin: 0;
   background: none;
   border: none;
@@ -306,7 +337,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   font-style: italic;
   font-size: 16px;
   line-height: 1.55;
-  color: rgba(245,240,232,0.78);
+  color: rgba(245,240,232,0.9);
   margin-bottom: 0.45rem;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -322,11 +353,12 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 @media (min-width: 901px) {
   .traces-stream-wrap {
     position: fixed;
-    right: clamp(1.25rem, 4vw, 2.5rem);
+    right: clamp(1.25rem, 3.5vw, 2.25rem);
     top: 50%;
     left: auto;
     transform: translateY(-50%);
     margin: 0;
+    width: 252px;
   }
 }
 
@@ -386,7 +418,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   }
 
   .hero-stat {
-    order: 6;
+    order: 7;
     margin-bottom: 0.55rem;
     padding: 4px 10px;
     font-size: 11px;
@@ -394,7 +426,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .hero-stat strong { font-size: 13px; }
 
   .world-feeling {
-    order: 6;
+    order: 8;
     margin-bottom: 0.6rem;
     padding: 9px 11px;
   }
@@ -422,17 +454,19 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 
   #helix-canvas { opacity: 0.3; }
 
-  /* Buttons before passing traces on mobile */
+  /* Buttons before count/mood/traces on mobile */
   .hero-actions {
-    order: 7;
+    order: 6;
     width: 100%;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.65rem;
     gap: 7px;
   }
   .traces-stream-wrap {
-    order: 8;
+    order: 9;
     max-width: 100%;
+    width: 100%;
     margin: 0 0 0.65rem 0;
+    padding: 0.65rem 0.75rem 0.75rem;
   }
   .traces-stream-viewport { height: 155px; }
   .traces-stream-label { margin-bottom: 0.45rem; font-size: 9px; }
@@ -442,7 +476,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .trace-item-alias { font-size: 10px; }
 
   .section-block {
-    order: 9;
+    order: 10;
     margin-bottom: 1.1rem;
   }
   .section-block:last-child { margin-bottom: 0; }
@@ -452,7 +486,7 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
   .how-step-num { width: 20px; height: 20px; font-size: 10px; }
 
   .site-footer {
-    order: 10;
+    order: 11;
     margin-top: 0.85rem;
     padding-top: 0.85rem;
     padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
@@ -635,8 +669,8 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
 
 /* Today's world feeling */
 .world-feeling {
-  margin-bottom: 1.5rem;
-  padding: 14px 16px;
+  margin-bottom: 1rem;
+  padding: 12px 14px;
   border-radius: 10px;
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.07);
@@ -1329,8 +1363,14 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
     <div class="divider"></div>
     <div class="hero-body">Each day, the world writes itself anew. One voice per person. One pin on the map. At midnight UTC the wall closes — but every day is kept, remembered, and woven into the archive of what humanity was feeling.</div>
 
+    <div class="hero-actions">
+      <button class="post-btn" id="open-modal-btn" onclick="openModal()">Leave your Trace</button>
+      <button class="stat-btn" onclick="openMap()">Explore today&rsquo;s wall ↗</button>
+      <button class="stat-btn" onclick="openArchive()">Browse the archive</button>
+    </div>
+
     <div class="hero-stat" id="hero-stat" style="display:none;">
-      <strong id="stat-notes">0</strong> traces left today
+      <strong id="stat-notes">0</strong> traces on the wall today
     </div>
 
     <div class="world-feeling" id="world-feeling" style="display:none;">
@@ -1353,12 +1393,6 @@ body { font-family: 'DM Sans', sans-serif; background: #04060f; color: var(--tex
         <div class="traces-stream-static" id="traces-stream-static"></div>
       </div>
     </aside>
-
-    <div class="hero-actions">
-      <button class="post-btn" id="open-modal-btn" onclick="openModal()">Leave your Trace</button>
-      <button class="stat-btn" onclick="openMap()">Explore today&rsquo;s wall ↗</button>
-      <button class="stat-btn" onclick="openArchive()">Browse the archive</button>
-    </div>
 
     <div class="section-block">
       <div class="section-label">How it works</div>
@@ -1677,7 +1711,7 @@ async function checkIfPosted() {
   var storedDate = localStorage.getItem('pinit_posted_date');
   if (storedDate === today) {
     hasPosted = true;
-    document.getElementById('open-modal-btn').textContent = "Trace left today";
+    document.getElementById('open-modal-btn').textContent = 'Trace posted today';
     document.getElementById('open-modal-btn').disabled = true;
     document.getElementById('find-my-note-btn').style.display = 'inline-flex';
     return;
@@ -1689,7 +1723,7 @@ async function checkIfPosted() {
   hasPosted = !!data;
   if (hasPosted) {
     localStorage.setItem('pinit_posted_date', today);
-    document.getElementById('open-modal-btn').textContent = "Trace left today";
+    document.getElementById('open-modal-btn').textContent = 'Trace posted today';
     document.getElementById('open-modal-btn').disabled = true;
     document.getElementById('find-my-note-btn').style.display = 'inline-flex';
   }
@@ -1758,22 +1792,26 @@ async function loadWorldFeeling() {
   }
 
   var sorted = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
-  var top = sorted[0];
+  var topCount = counts[sorted[0]];
+  var tiedTops = sorted.filter(function(id) { return counts[id] === topCount; });
+  var hasTie = tiedTops.length > 1;
 
   var labelEl = document.getElementById('world-feeling-label');
   if (labelEl) {
     if (total >= 5) {
-      labelEl.textContent = "Today\u2019s world feeling";
+      labelEl.textContent = hasTie ? "Today\u2019s world feelings" : "Today\u2019s world feeling";
     } else if (total === 1) {
       labelEl.textContent = "Among today\u2019s first traces";
     } else {
-      labelEl.textContent = 'Early mood today';
+      labelEl.textContent = hasTie ? 'Early moods today' : 'Early mood today';
     }
   }
 
-  wrap.classList.toggle('world-feeling-single', total === 1);
+  wrap.classList.toggle('world-feeling-single', total === 1 && !hasTie);
 
-  document.getElementById('world-feeling-main').textContent = moodLabel(top);
+  document.getElementById('world-feeling-main').textContent = hasTie
+    ? tiedTops.map(moodLabel).join(' \u00b7 ')
+    : moodLabel(sorted[0]);
   if (total === 1) {
     document.getElementById('world-feeling-sub').textContent = '1 shared mood today';
   } else if (total >= 5) {
@@ -1927,7 +1965,7 @@ async function submitNote() {
   localStorage.setItem('pinit_posted_date', _postDate);
   document.getElementById('find-my-note-btn').style.display = 'inline-flex';
   closeModal();
-  document.getElementById('open-modal-btn').textContent = 'Your note is on the wall';
+  document.getElementById('open-modal-btn').textContent = 'Trace posted today';
   document.getElementById('open-modal-btn').disabled = true;
   btn.disabled=false; btn.innerHTML='Pin my note to the wall &rarr;';
 
