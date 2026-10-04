@@ -8,12 +8,18 @@ the service-role key must only exist in Vercel server environment variables.
 ## Operator steps (required before production)
 
 1. Back up the Supabase schema and data. Confirm `notes.id` is UUID,
-   `notes.note_date` is date and `notes.created_at` is timestamptz. Inventory custom
+   `notes.note_date` is date and `notes.created_at` is timestamp or timestamptz.
+   The owner-provided production schema uses timestamp without timezone; the RPC
+   explicitly interprets it as UTC without changing the stored column. Inventory custom
    views, functions, policies and grants: a view or legacy SECURITY DEFINER RPC
    outside this repository can expose data or writes despite these table policies.
    Check dependencies on `notes.ip_hash`; a dependent view makes this migration
    abort rather than silently delete that view.
-2. Create a separate Supabase staging database with representative sanitized data.
+2. Create a separate Supabase staging database. For a NEW EMPTY Supabase project,
+   run `migrations/staging_base.sql` to create the production-shaped tables; it
+   refuses an existing Pinit database and adds no note data. Then apply hardening
+   directly (the staging base includes mood/reports fields). For an existing copy
+   with representative sanitized data, follow the prerequisites below.
    If missing, apply the existing mood and reports prerequisite migrations FIRST.
    Apply `migrations/20261004_hardening.sql` ONCE. It is transactional, requires a
    database owner, and is intentionally not a repeatable bootstrap script.
@@ -25,7 +31,8 @@ the service-role key must only exist in Vercel server environment variables.
    the same migration, then deploy the new code. Old cached clients will fail to
    post after lockdown; they need a reload. This is preferable to keeping anonymous
    writes enabled during a mixed-version deployment.
-4. Set server-only `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and two independent
+4. Set `SUPABASE_URL` and `SUPABASE_PUBLIC_KEY` (publishable/anon browser key) to the
+   SAME project, and server-only `SUPABASE_SERVICE_ROLE_KEY`, plus two independent
    random secrets `LIMITER_SECRET` and `ADMIN_SESSION_SECRET` (at least 32 characters
    each). Generate them with a password manager or `crypto.randomBytes(32)` locally.
    Keep the limiter secret stable within a UTC day: changing it resets today's IP
@@ -41,6 +48,10 @@ the service-role key must only exist in Vercel server environment variables.
    production domain names. Add an exact staging/preview origin only to that
    environment. Use separate staging secrets/database; avoid production secrets on
    untrusted preview branches. Cross-origin and missing-Origin writes are rejected.
+   Configure these variables for Preview and this branch first. Public reads and
+   server writes now use the same environment-configured project; a Vercel build
+   intentionally fails if URL/public-key configuration is missing. The public key
+   is bundled into config.js; the build rejects server-secret/service-role keys.
 7. Vercel uses `npm ci --ignore-scripts`, `npm run build`, and serves `dist`.
    APIs remain Vercel functions. Confirm Node 24 and test HTTPS Secure cookies,
    platform IP/country headers, response headers and CSP in a preview. IP/country
@@ -83,6 +94,8 @@ the service-role key must only exist in Vercel server environment variables.
 - CSP permits scripts only from self and rejects script attributes. Styles retain
   `unsafe-inline` for Leaflet positioning and dynamic note/animation styling. This
   is a deliberate style-only exception, with no unsafe-inline/eval script permission.
+  Hosted Supabase HTTPS origins are permitted so isolated staging projects work;
+  tighten connect-src to the exact production/staging hosts when known.
   Fonts, country map tiles and pinned globe image assets remain third-party requests.
   All executable dependencies are exact-version local bundles with a lockfile.
 - Leaflet loads on demand; Three.js/globe initialization is delayed until idle.

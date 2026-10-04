@@ -33,3 +33,18 @@ test('migration closes anonymous authority and daily creation is atomic',async()
  assert.equal(rates.filter(r=>r.rows[0].allowed).length,5);
  await db.close();
 });
+
+test('empty staging bootstrap matches production timestamp type and refuses existing tables',async()=>{
+ const db=new PGlite();
+ await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS; GRANT USAGE ON SCHEMA public TO anon,authenticated,service_role;');
+ const staging=await readFile('migrations/staging_base.sql','utf8');
+ await db.exec(staging);
+ await assert.rejects(db.exec(staging),/Refusing existing Pinit database/);
+ await db.exec('ROLLBACK');
+ await db.exec(await readFile('migrations/20261004_hardening.sql','utf8'));
+ await db.exec("SET TIME ZONE 'Pacific/Honolulu'; SET ROLE service_role");
+ const row=(await db.query('SELECT * FROM create_daily_note($1,$2,$3,$4,$5,$6,$7,$8)',
+   ['e'.repeat(64),new Date().toISOString().slice(0,10),'A kind little thought','Alice','#e63946',null,'Unknown',''])).rows[0];
+ assert(Math.abs(new Date(row.created_at).getTime()-Date.now())<10000);
+ await db.close();
+});

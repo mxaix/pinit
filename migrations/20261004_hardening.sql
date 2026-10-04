@@ -81,7 +81,7 @@ END $$;
 
 CREATE FUNCTION public.create_daily_note(p_key text,p_day date,p_content text,p_alias text,p_color text,p_mood text,p_country text,p_country_code text)
 RETURNS TABLE(id uuid,content text,alias text,color text,mood text,country text,country_code text,note_date date,created_at timestamptz)
-LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+LANGUAGE plpgsql SECURITY DEFINER SET search_path='' SET timezone='UTC' AS $$
 DECLARE day date := (now() AT TIME ZONE 'UTC')::date; new_id uuid;
 BEGIN
  IF p_day IS DISTINCT FROM day THEN RAISE EXCEPTION 'UTC date rollover: retry'; END IF;
@@ -89,7 +89,8 @@ BEGIN
  INSERT INTO public.notes(content,alias,color,mood,country,country_code,note_date)
  VALUES(p_content,p_alias,p_color,p_mood,p_country,p_country_code,day) RETURNING notes.id INTO new_id;
  UPDATE pinit_private.daily_notes SET note_id=new_id WHERE limiter_key=p_key AND daily_notes.note_date=day;
- RETURN QUERY SELECT n.id,n.content,n.alias,n.color,n.mood,n.country,n.country_code,n.note_date,n.created_at FROM public.notes n WHERE n.id=new_id;
+ -- Support production's timestamp-without-timezone column, interpreting it as UTC.
+ RETURN QUERY SELECT n.id,n.content,n.alias,n.color,n.mood,n.country,n.country_code,n.note_date,n.created_at::timestamptz FROM public.notes n WHERE n.id=new_id;
 END $$;
 REVOKE ALL ON FUNCTION public.take_rate_limit(text,integer,integer) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.create_daily_note(text,date,text,text,text,text,text,text) FROM PUBLIC, anon, authenticated;

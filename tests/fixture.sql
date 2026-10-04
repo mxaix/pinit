@@ -3,9 +3,9 @@ CREATE ROLE authenticated;
 CREATE ROLE service_role BYPASSRLS;
 GRANT USAGE ON SCHEMA public TO anon,authenticated,service_role;
 CREATE TABLE public.notes (
- id uuid PRIMARY KEY DEFAULT gen_random_uuid(), content text, alias text, color text,
- country text, country_code text, ip_hash text, note_date date,
- created_at timestamptz NOT NULL DEFAULT now()
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(), content text NOT NULL, alias text NOT NULL, color text NOT NULL DEFAULT '#fef08a',
+ country text NOT NULL DEFAULT 'Unknown', country_code text, ip_hash text NOT NULL, note_date date DEFAULT CURRENT_DATE,
+ created_at timestamp DEFAULT now(), lat double precision, lng double precision
 );
 CREATE TABLE public.submissions(id uuid DEFAULT gen_random_uuid(),ip_hash text,sub_date date);
 CREATE TABLE public.reports(id uuid DEFAULT gen_random_uuid(),note_id uuid REFERENCES notes(id) ON DELETE CASCADE,reporter_hash text,created_at timestamptz DEFAULT now(),UNIQUE(note_id,reporter_hash));

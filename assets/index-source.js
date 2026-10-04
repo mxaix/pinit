@@ -16,7 +16,7 @@ var INFO_CONTENT = {
       '<ul><li>We do not show your exact location — <strong>country only</strong></li>' +
       '<li>You may use an alias; your real name is never required</li>' +
       '<li>Public notes may remain visible in the archive</li>' +
-      '<li>We use a hashed identifier to limit one post per day — not to track you personally</li>' +
+      '<li>We use a private identifier that changes daily to limit posting per network. It is never included in public notes. Shared networks may share a limit.</li>' +
       '<li>Notes are checked by local moderation (Pinit Shield) before posting</li></ul>'
   },
   rules: {
@@ -58,8 +58,8 @@ document.getElementById('info-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeInfoModal();
 });
 
-var SUPABASE_URL = 'https://udzxqigctbrpandqmzev.supabase.co';
-var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkenhxaWdjdGJycGFuZHFtemV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NjQ1NzMsImV4cCI6MjA4OTE0MDU3M30.ZR5L_90-ztWz_D-gVbSIwQFEnrqa3XDBZCmRjzB5EEs';
+var SUPABASE_URL = window.PINIT_CONFIG.url;
+var SUPABASE_KEY = window.PINIT_CONFIG.publicKey;
 var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 
 var COLORS = [

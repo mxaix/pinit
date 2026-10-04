@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom';
 async function page(name) {
  const dom=new JSDOM(await readFile(`${name}.html`,'utf8'),{url:'https://www.pinitworld.com',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window;
+ w.PINIT_CONFIG={url:'https://test.supabase.co',publicKey:'test-public-key'};
  w.matchMedia=()=>({matches:false,addEventListener(){},addListener(){}});
  w.scrollTo=()=>{};w.requestAnimationFrame=()=>0;w.setInterval=()=>0;w.setTimeout=()=>0;
  w.fetch=async()=>({ok:true,json:async()=>({authenticated:false,country:'Unknown'})});
