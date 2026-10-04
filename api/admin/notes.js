@@ -14,13 +14,13 @@ function buildReportCounts(reports) {
 }
 
 export default async function handler(req, res) {
-  if (!requireAdmin(req, res)) return;
+  if (!await requireAdmin(req, res)) return;
 
   try {
     if (req.method === 'GET') {
       const [notes, reports] = await Promise.all([
-        supabaseRequest('notes?select=*&order=created_at.desc'),
-        supabaseRequest('reports?select=note_id').catch(() => []),
+        supabaseRequest('notes?select=id,content,alias,color,mood,country,country_code,note_date,created_at,hidden,hidden_at&order=created_at.desc&limit=1000'),
+        supabaseRequest('reports?select=note_id&limit=10000').catch(() => []),
       ]);
 
       return res.status(200).json({
@@ -67,7 +67,7 @@ export default async function handler(req, res) {
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    console.error('Admin notes API error:', err);
+    console.error('Admin notes API failed', {status:err.status || 500});
     return res.status(err.status || 500).json({ error: 'Failed to process admin request' });
   }
 }

@@ -1,12 +1,14 @@
 /* Pinit — conservative shell cache only. Live data always from network. */
-const CACHE_NAME = 'pinit-shell-v1';
+const CACHE_NAME = 'pinit-shell-v2';
 
 const SHELL_PATHS = new Set([
   '/',
   '/index.html',
+  '/assets/index.js',
+  '/assets/index.css',
   '/favicon.svg',
   '/manifest.json',
-  '/og-image.svg',
+  '/og-image.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-512.png',
@@ -30,9 +32,13 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll([
+        '/',
+        '/index.html',
+        '/assets/index.js',
+        '/assets/index.css',
         '/favicon.svg',
         '/manifest.json',
-        '/og-image.svg',
+        '/og-image.png',
         '/icons/icon-192.png',
         '/icons/icon-512.png',
         '/icons/icon-maskable-512.png',

@@ -234,7 +234,7 @@ function wordCount(text) {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
-function runPinitShield(text) {
+export function runPinitShield(text) {
   if (wordCount(text) < 3) {
     return { safe: false, reason: TOO_SHORT_REASON };
   }
@@ -251,32 +251,7 @@ function runPinitShield(text) {
 
 // ── Handler ──────────────────────────────────────────────────────────────────
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  try {
-    const { text } = req.body || {};
-    if (!text || typeof text !== 'string') {
-      return res.status(400).json({ safe: false, reason: 'No text provided' });
-    }
-
-    const result = runPinitShield(text);
-
-    if (!result.safe) {
-      console.log('Pinit Shield: blocked', {
-        version: SHIELD_VERSION,
-        category: result.reason === TOO_SHORT_REASON ? 'too_short' : 'content',
-        length: text.length,
-      });
-    }
-
-    return res.status(200).json(result);
-  } catch (err) {
-    console.error('Pinit Shield error:', err.message || err);
-    // Local-only: no external dependency; allow on unexpected internal errors
-    // so a feelings wall stays open (report/admin remain backup).
-    return res.status(200).json({ safe: true });
-  }
+export default function handler(req,res) {
+ res.setHeader('Cache-Control','no-store');
+ return res.status(410).json({safe:false,reason:'Submit notes through /api/notes'});
 }
