@@ -1,9 +1,11 @@
+import { noStore } from '../../lib/security.js';
 import { getTokenFromRequest, verifySessionToken } from '../../lib/adminAuth.js';
 
 export default async function handler(req, res) {
+  noStore(res);
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const token = getTokenFromRequest(req);
-  const authenticated = verifySessionToken(token);
+  const authenticated = await verifySessionToken(token);
   return res.status(200).json({ authenticated });
 }

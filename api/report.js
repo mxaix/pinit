@@ -1,3 +1,4 @@
+import { sameOrigin, rateLimit } from '../lib/security.js';
 import { getReporterHash } from '../lib/ipHash.js';
 import { supabaseRequest } from '../lib/supabaseAdmin.js';
 
@@ -5,6 +6,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 const DAILY_REPORT_LIMIT = 20;
 
 export default async function handler(req, res) {
+  if (!sameOrigin(req,res)) return;
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -16,6 +18,7 @@ export default async function handler(req, res) {
     }
 
     const reporterHash = getReporterHash(req);
+    if (!await rateLimit(reporterHash, 20, 86400)) return res.status(429).json({error:'Report limit reached'});
     const todayStart = new Date().toISOString().slice(0, 10) + 'T00:00:00.000Z';
 
     const noteRows = await supabaseRequest(
@@ -58,7 +61,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ok: true });
   } catch (err) {
-    console.error('Report API error:', err);
+    console.error('Report API failed', {status:err.status || 500});
     return res.status(500).json({ ok: false, error: 'Could not submit report. Please try again.' });
   }
 }
